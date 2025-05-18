@@ -1,93 +1,73 @@
 import Link from "next/link"
-import { Star } from "lucide-react"
+import { CirclePlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function FeaturedProducts() {
   const products = [
     {
       id: 1,
-      name: "Wireless Headphones",
-      price: 129.99,
-      rating: 4.5,
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      isNew: true,
-      isSale: false,
+      name: "Chocolate Croissant",
+      price: 350,
+      description: "Buttery, flaky croissant filled with rich chocolate, baked to golden perfection.",
+      category: "Pastries",
+      image: "https://images.unsplash.com/photo-1623334044303-241021148842?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 2,
-      name: "Smart Watch",
-      price: 199.99,
-      originalPrice: 249.99,
-      rating: 4.2,
-      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      isNew: false,
-      isSale: true,
+      name: "Classic Tiramisu",
+      price: 450,
+      description: "Layers of coffee-soaked ladyfingers and mascarpone cream, dusted with cocoa powder.",
+      category: "Desserts",
+      image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 3,
-      name: "Leather Backpack",
-      price: 79.99,
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=400&auto=format&fit=crop",
-      category: "Fashion",
-      isNew: true,
-      isSale: false,
+      name: "Artisan Sourdough Bread",
+      price: 300,
+      description: "Traditional sourdough made with our 5-year-old starter, featuring a crispy crust and chewy interior.",
+      category: "Bread",
+      image: "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 4,
-      name: "Coffee Maker",
-      price: 89.99,
-      originalPrice: 119.99,
-      rating: 4.6,
-      image: "https://images.unsplash.com/photo-1570486876339-c7a79f5c8a9a?q=80&w=400&auto=format&fit=crop",
-      category: "Home & Kitchen",
-      isNew: false,
-      isSale: true,
+      name: "Lotus Cheesecake",
+      price: 550,
+      description: "Creamy cheesecake with a layer of Lotus Biscoff spread and crumbled biscuit topping.",
+      category: "Desserts",
+      image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 5,
-      name: "Fitness Tracker",
-      price: 49.99,
-      rating: 4.3,
-      image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd6b0?q=80&w=400&auto=format&fit=crop",
-      category: "Sports",
-      isNew: false,
-      isSale: false,
+      name: "Pistachio Baklava",
+      price: 280,
+      description: "Layers of flaky phyllo pastry filled with chopped pistachios, soaked in honey syrup.",
+      category: "Middle Eastern",
+      image: "https://images.unsplash.com/photo-1519676867240-f03562e64548?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 6,
-      name: "Wireless Earbuds",
-      price: 89.99,
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      isNew: true,
-      isSale: false,
+      name: "Cinnamon Rolls",
+      price: 250,
+      description: "Soft, fluffy rolls with a swirl of cinnamon sugar, topped with cream cheese frosting.",
+      category: "Pastries",
+      image: "https://images.unsplash.com/photo-1583527972662-9453d6fadc6f?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 7,
-      name: "Portable Speaker",
-      price: 59.99,
-      originalPrice: 79.99,
-      rating: 4.4,
-      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      isNew: false,
-      isSale: true,
+      name: "Mango Mousse Cake",
+      price: 500,
+      description: "Light and airy mousse cake made with fresh Pakistani mangoes on a vanilla sponge base.",
+      category: "Desserts",
+      image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 8,
-      name: "Digital Camera",
-      price: 399.99,
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      isNew: false,
-      isSale: false,
+      name: "Fresh Naan",
+      price: 100,
+      description: "Soft, pillowy traditional naan bread baked in our tandoor oven, brushed with butter.",
+      category: "Bread",
+      image: "https://images.unsplash.com/photo-1596428003957-4d5d849b6e9c?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
   ]
 
@@ -95,75 +75,42 @@ export default function FeaturedProducts() {
     <section className="py-12 md:py-16 lg:py-20">
       <div className="container">
         <div className="mb-8 flex flex-col items-center text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Featured Products</h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Our Featured Menu</h2>
           <p className="mt-4 max-w-[700px] text-muted-foreground">
-            Discover our most popular products, hand-picked for their quality and value
+            Handcrafted with love and the finest ingredients - our most popular bakery items
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product) => (
             <Card key={product.id} className="overflow-hidden">
-              <Link href={`/products/${product.id}`}>
-                <div className="relative aspect-square overflow-hidden">
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition-transform hover:scale-105"
-                  />
-                  {product.isNew && (
-                    <Badge className="absolute left-2 top-2 bg-green-500 hover:bg-green-600">New</Badge>
-                  )}
-                  {product.isSale && (
-                    <Badge variant="destructive" className="absolute right-2 top-2">
-                      Sale
-                    </Badge>
-                  )}
+              <div className="relative h-48 w-full overflow-hidden">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform hover:scale-105"
+                />
+              </div>
+              <div className="p-5">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-lg">{product.name}</h3>
+                  <span className="text-primary font-semibold">Rs. {product.price}</span>
                 </div>
-              </Link>
-              <CardContent className="p-4">
-                <div className="mb-1 text-sm text-muted-foreground">{product.category}</div>
-                <Link href={`/products/${product.id}`} className="hover:underline">
-                  <h3 className="line-clamp-1 text-lg font-medium">{product.name}</h3>
-                </Link>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(product.rating)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : i < product.rating
-                              ? "fill-yellow-400 text-yellow-400 [clip-path:inset(0_50%_0_0)]"
-                              : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-muted-foreground">{product.rating}</span>
+                <p className="text-gray-600 text-sm mb-4">{product.description}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs px-2 py-1 bg-secondary text-primary rounded-full">
+                    {product.category}
+                  </span>
+                  <Button variant="ghost" className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-3 text-primary hover:text-primary/90 hover:bg-secondary">
+                    <CirclePlus className="mr-1 h-4 w-4" /> Add to Cart
+                  </Button>
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                  {product.originalPrice ? (
-                    <>
-                      <span className="font-medium text-primary">${product.price.toFixed(2)}</span>
-                      <span className="text-sm text-muted-foreground line-through">
-                        ${product.originalPrice.toFixed(2)}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="font-medium">${product.price.toFixed(2)}</span>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button className="w-full">Add to Cart</Button>
-              </CardFooter>
+              </div>
             </Card>
           ))}
         </div>
         <div className="mt-10 flex justify-center">
           <Button asChild size="lg">
-            <Link href="/products">View All Products</Link>
+            <Link href="/menu">View Full Menu</Link>
           </Button>
         </div>
       </div>

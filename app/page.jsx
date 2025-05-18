@@ -3,9 +3,10 @@ import Footer from "@/components/footer"
 import FeaturedProducts from "@/components/featured-products"
 import CategorySection from "@/components/category-section"
 import HeroSection from "@/components/hero-section"
-import TestimonialSection from "@/components/testimonial-section"
 import NewsletterSection from "@/components/newsletter-section"
-
+import OurStory from "@/components/our-story"
+import SpecialOffers from "@/components/special-offers"
+import CustomerReviews from "@/components/customer-reviews"
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -16,8 +17,13 @@ export default function HomePage() {
       </header>
       <main className="flex-1">
         <HeroSection />
+                <FeaturedProducts />
+                <OurStory />
+
+                <SpecialOffers />
+                                <CustomerReviews />
+
         <CategorySection />
-        <FeaturedProducts />
         <div className="bg-muted py-16">
           <div className="container">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -100,7 +106,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <TestimonialSection />
         <NewsletterSection />
       </main>
       <Footer />
