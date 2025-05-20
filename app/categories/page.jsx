@@ -6,66 +6,66 @@ import Footer from "@/components/footer"
 export default function CategoriesPage() {
   const categories = [
     {
-      id: "electronics",
-      name: "Electronics",
-      image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=600&auto=format&fit=crop",
-      description: "Latest gadgets and electronic devices",
-      productCount: 42,
+      id: "artisan-breads",
+      name: "Artisan Breads",
+      image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Handcrafted loaves made with traditional methods",
+      productCount: 12,
     },
     {
-      id: "fashion",
-      name: "Fashion",
-      image: "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop",
-      description: "Trendy clothing, shoes, and accessories",
-      productCount: 56,
+      id: "cakes-pastries",
+      name: "Cakes & Pastries",
+      image: "https://images.unsplash.com/photo-1569864358642-9d1684040f43?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Delicious treats for every occasion",
+      productCount: 18,
     },
     {
-      id: "home-kitchen",
-      name: "Home & Kitchen",
-      image: "https://images.unsplash.com/photo-1556911220-bda9f7f7597e?q=80&w=600&auto=format&fit=crop",
-      description: "Everything you need for your home",
-      productCount: 38,
+      id: "cookies-biscuits",
+      name: "Cookies & Biscuits",
+      image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Sweet and savory bite-sized delights",
+      productCount: 15,
     },
     {
-      id: "beauty",
-      name: "Beauty",
-      image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop",
-      description: "Makeup, skincare, and personal care products",
-      productCount: 29,
+      id: "specialty-desserts",
+      name: "Specialty Desserts",
+      image: "https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Indulgent treats crafted with premium ingredients",
+      productCount: 10,
     },
     {
-      id: "sports",
-      name: "Sports & Outdoors",
-      image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=600&auto=format&fit=crop",
-      description: "Equipment and gear for all sports and outdoor activities",
-      productCount: 34,
+      id: "coffee-beverages",
+      name: "Coffee & Beverages",
+      image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Specialty coffees and refreshing drinks",
+      productCount: 14,
     },
     {
-      id: "books",
-      name: "Books & Media",
-      image: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=600&auto=format&fit=crop",
-      description: "Books, movies, music, and more",
-      productCount: 47,
+      id: "breakfast-items",
+      name: "Breakfast Items",
+      image: "https://images.unsplash.com/photo-1484723091739-30a097e8f929?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Start your day with our morning specialties",
+      productCount: 16,
     },
     {
-      id: "toys",
-      name: "Toys & Games",
-      image: "https://images.unsplash.com/photo-1558060370-d644479cb6f7?q=80&w=600&auto=format&fit=crop",
-      description: "Fun for all ages",
-      productCount: 31,
+      id: "traditional-pakistani",
+      name: "Traditional Pakistani",
+      image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Authentic flavors from local recipes",
+      productCount: 9,
     },
     {
-      id: "jewelry",
-      name: "Jewelry & Watches",
-      image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop",
-      description: "Elegant jewelry and watches",
-      productCount: 25,
+      id: "seasonal-specials",
+      name: "Seasonal Specials",
+      image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+      description: "Limited-time offerings using seasonal ingredients",
+      productCount: 8,
     },
   ]
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
+      <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
         <div className="container flex h-16 items-center">
           <MainNav />
         </div>
@@ -73,30 +73,30 @@ export default function CategoriesPage() {
       <main className="flex-1">
         <div className="container py-12">
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Shop by Category</h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Browse our wide selection of products across popular categories
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl text-[#2a201c]">Our Delicious Categories</h1>
+            <p className="mt-4 text-lg text-gray-600">
+              Explore our handcrafted selection of freshly baked goods and cafe delights
             </p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {categories.map((category) => (
-              <Link key={category.id} href={`/products/category/${category.id}`}>
-                <Card className="overflow-hidden transition-all hover:shadow-lg">
-                  <CardContent className="p-0">
-                    <div className="aspect-[4/3] overflow-hidden">
+              <Link key={category.id} href={`/products/category/${category.id}`} className="h-full">
+                <Card className="overflow-hidden transition-all hover:shadow-lg border-none h-full flex flex-col">
+                  <CardContent className="p-0 flex flex-col h-full">
+                    <div className="aspect-[4/3] overflow-hidden flex-shrink-0">
                       <img
                         src={category.image || "/placeholder.svg"}
                         alt={category.name}
                         className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
                     </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold">{category.name}</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">{category.description}</p>
+                    <div className="p-6 bg-white flex flex-col flex-grow">
+                      <h3 className="text-xl font-semibold text-[#2a201c]">{category.name}</h3>
+                      <p className="mt-2 text-sm text-gray-600 flex-grow">{category.description}</p>
                       <div className="mt-4 flex items-center justify-between">
-                        <span className="text-sm font-medium">{category.productCount} Products</span>
-                        <span className="text-sm font-medium text-primary">View All</span>
+                        <span className="text-xs px-2 py-1 bg-[#f8f5f2] text-[#8B5A2B] rounded-full">{category.productCount} Items</span>
+                        <span className="text-sm font-medium text-[#C8815F] hover:underline">Browse Category</span>
                       </div>
                     </div>
                   </CardContent>

@@ -2,10 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Star, Filter, ChevronDown, ChevronUp, X } from "lucide-react"
+import { Star, Filter, ChevronDown, ChevronUp, X, CirclePlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -18,163 +17,177 @@ export default function ProductsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [priceRange, setPriceRange] = useState([0, 1000])
   const [selectedCategories, setSelectedCategories] = useState([])
-  const [selectedBrands, setSelectedBrands] = useState([])
+  const [selectedTypes, setSelectedTypes] = useState([])
   const [sortOption, setSortOption] = useState("featured")
 
   const products = [
     {
       id: 1,
-      name: "Wireless Headphones",
-      price: 129.99,
-      rating: 4.5,
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      brand: "SoundMax",
+      name: "Chocolate Croissant",
+      price: 350,
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1623334044303-241021148842?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Pastries",
+      type: "Breakfast",
       isNew: true,
       isSale: false,
+      description: "Buttery, flaky croissant filled with rich chocolate, baked to golden perfection."
     },
     {
       id: 2,
-      name: "Smart Watch",
-      price: 199.99,
-      originalPrice: 249.99,
-      rating: 4.2,
-      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      brand: "TechGear",
+      name: "Classic Tiramisu",
+      price: 450,
+      originalPrice: 500,
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Desserts",
+      type: "Italian",
       isNew: false,
       isSale: true,
+      description: "Layers of coffee-soaked ladyfingers and mascarpone cream, dusted with cocoa powder."
     },
     {
       id: 3,
-      name: "Leather Backpack",
-      price: 79.99,
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=400&auto=format&fit=crop",
-      category: "Fashion",
-      brand: "UrbanStyle",
+      name: "Artisan Sourdough Bread",
+      price: 300,
+      rating: 4.7,
+      image: "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Bread",
+      type: "Artisan",
       isNew: true,
       isSale: false,
+      description: "Traditional sourdough made with our 5-year-old starter, featuring a crispy crust and chewy interior."
     },
     {
       id: 4,
-      name: "Coffee Maker",
-      price: 89.99,
-      originalPrice: 119.99,
-      rating: 4.6,
-      image: "https://images.unsplash.com/photo-1570486876339-c7a79f5c8a9a?q=80&w=400&auto=format&fit=crop",
-      category: "Home & Kitchen",
-      brand: "HomeEssentials",
+      name: "Lotus Cheesecake",
+      price: 550,
+      originalPrice: 650,
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Desserts",
+      type: "Signature",
       isNew: false,
       isSale: true,
+      description: "Creamy cheesecake with a layer of Lotus Biscoff spread and crumbled biscuit topping."
     },
     {
       id: 5,
-      name: "Fitness Tracker",
-      price: 49.99,
-      rating: 4.3,
-      image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd6b0?q=80&w=400&auto=format&fit=crop",
-      category: "Sports",
-      brand: "FitLife",
+      name: "Pistachio Baklava",
+      price: 280,
+      rating: 4.6,
+      image: "https://images.unsplash.com/photo-1519676867240-f03562e64548?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Middle Eastern",
+      type: "Traditional",
       isNew: false,
       isSale: false,
+      description: "Layers of flaky phyllo pastry filled with chopped pistachios, soaked in honey syrup."
     },
     {
       id: 6,
-      name: "Wireless Earbuds",
-      price: 89.99,
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      brand: "SoundMax",
+      name: "Cinnamon Rolls",
+      price: 250,
+      rating: 4.5,
+      image: "https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Pastries",
+      type: "Breakfast",
       isNew: true,
       isSale: false,
+      description: "Soft, fluffy rolls with a swirl of cinnamon sugar, topped with cream cheese frosting."
     },
     {
       id: 7,
-      name: "Portable Speaker",
-      price: 59.99,
-      originalPrice: 79.99,
-      rating: 4.4,
-      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      brand: "SoundMax",
+      name: "Mango Mousse Cake",
+      price: 500,
+      originalPrice: 600,
+      rating: 4.7,
+      image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Desserts",
+      type: "Seasonal",
       isNew: false,
       isSale: true,
+      description: "Light and airy mousse cake made with fresh Pakistani mangoes on a vanilla sponge base."
     },
     {
       id: 8,
-      name: "Digital Camera",
-      price: 399.99,
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      brand: "TechGear",
+      name: "Fresh Naan",
+      price: 100,
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Bread",
+      type: "Traditional",
       isNew: false,
       isSale: false,
+      description: "Soft, pillowy traditional naan bread baked in our tandoor oven, brushed with butter."
     },
     {
       id: 9,
-      name: "Yoga Mat",
-      price: 29.99,
+      name: "Butter Cookies",
+      price: 200,
       rating: 4.5,
-      image: "https://images.unsplash.com/photo-1592432678016-e910b452f9a2?q=80&w=400&auto=format&fit=crop",
-      category: "Sports",
-      brand: "FitLife",
+      image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Cookies",
+      type: "Signature",
       isNew: false,
       isSale: false,
+      description: "Melt-in-your-mouth butter cookies made with premium French butter and vanilla."
     },
     {
       id: 10,
-      name: "Desk Lamp",
-      price: 39.99,
-      rating: 4.2,
-      image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=400&auto=format&fit=crop",
-      category: "Home & Kitchen",
-      brand: "HomeEssentials",
+      name: "Classic Croissant",
+      price: 180,
+      rating: 4.6,
+      image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Pastries",
+      type: "Breakfast",
       isNew: false,
       isSale: false,
+      description: "Authentic French croissants with a buttery, flaky exterior and soft, airy interior."
     },
     {
       id: 11,
-      name: "Bluetooth Speaker",
-      price: 79.99,
-      originalPrice: 99.99,
+      name: "Carrot Cake",
+      price: 400,
+      originalPrice: 450,
       rating: 4.6,
-      image: "https://images.unsplash.com/photo-1589003077984-894e133dabab?q=80&w=400&auto=format&fit=crop",
-      category: "Electronics",
-      brand: "SoundMax",
+      image: "https://images.unsplash.com/photo-1566121933407-3c7ccdd26763?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Cakes",
+      type: "Signature",
       isNew: false,
       isSale: true,
+      description: "Moist carrot cake with walnuts and cream cheese frosting, a Chalet Cafe classic."
     },
     {
       id: 12,
-      name: "Leather Wallet",
-      price: 49.99,
+      name: "Chocolate Chip Cookies",
+      price: 220,
       rating: 4.7,
-      image: "https://images.unsplash.com/photo-1627123424574-724758594e93?q=80&w=400&auto=format&fit=crop",
-      category: "Fashion",
-      brand: "UrbanStyle",
+      image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      category: "Cookies",
+      type: "Popular",
       isNew: true,
       isSale: false,
+      description: "Perfectly baked cookies with chunks of premium chocolate and a soft, chewy center."
     },
   ]
 
   const categories = [
-    { id: "electronics", name: "Electronics" },
-    { id: "fashion", name: "Fashion" },
-    { id: "home-kitchen", name: "Home & Kitchen" },
-    { id: "sports", name: "Sports" },
-    { id: "beauty", name: "Beauty" },
-    { id: "books", name: "Books" },
+    { id: "pastries", name: "Pastries" },
+    { id: "desserts", name: "Desserts" },
+    { id: "bread", name: "Bread" },
+    { id: "middle-eastern", name: "Middle Eastern" },
+    { id: "cookies", name: "Cookies" },
+    { id: "cakes", name: "Cakes" },
   ]
 
-  const brands = [
-    { id: "soundmax", name: "SoundMax" },
-    { id: "techgear", name: "TechGear" },
-    { id: "urbanstyle", name: "UrbanStyle" },
-    { id: "homeessentials", name: "HomeEssentials" },
-    { id: "fitlife", name: "FitLife" },
+  const types = [
+    { id: "breakfast", name: "Breakfast" },
+    { id: "italian", name: "Italian" },
+    { id: "artisan", name: "Artisan" },
+    { id: "signature", name: "Signature" },
+    { id: "traditional", name: "Traditional" },
+    { id: "seasonal", name: "Seasonal" },
+    { id: "popular", name: "Popular" },
   ]
 
   const toggleCategory = (categoryId) => {
@@ -183,8 +196,8 @@ export default function ProductsPage() {
     )
   }
 
-  const toggleBrand = (brandId) => {
-    setSelectedBrands((prev) => (prev.includes(brandId) ? prev.filter((id) => id !== brandId) : [...prev, brandId]))
+  const toggleType = (typeId) => {
+    setSelectedTypes((prev) => (prev.includes(typeId) ? prev.filter((id) => id !== typeId) : [...prev, typeId]))
   }
 
   const handlePriceChange = (value) => {
@@ -205,10 +218,10 @@ export default function ProductsPage() {
       }
     }
 
-    // Filter by brand
-    if (selectedBrands.length > 0) {
-      const brandId = product.brand.toLowerCase().replace(/\s+/g, "")
-      if (!selectedBrands.includes(brandId)) {
+    // Filter by type
+    if (selectedTypes.length > 0) {
+      const typeId = product.type.toLowerCase().replace(/\s+/g, "")
+      if (!selectedTypes.includes(typeId)) {
         return false
       }
     }
@@ -233,23 +246,23 @@ export default function ProductsPage() {
   })
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
+      <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
         <div className="container flex h-16 items-center">
           <MainNav />
         </div>
       </header>
       <main className="flex-1">
         <div className="container py-8">
-          <div className="mb-6 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+          <div className="mb-8 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">All Products</h1>
-              <p className="text-muted-foreground">Showing {sortedProducts.length} products</p>
+              <h1 className="text-3xl font-bold tracking-tight text-[#2a201c]">Our Menu</h1>
+              <p className="text-gray-600">Showing {sortedProducts.length} delicious items</p>
             </div>
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
-                className="flex items-center gap-2 md:hidden"
+                className="flex items-center gap-2 border-[#C8815F] text-[#C8815F] md:hidden"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
                 <Filter className="h-4 w-4" />
@@ -257,9 +270,9 @@ export default function ProductsPage() {
                 {isFilterOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </Button>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Sort by:</span>
+                <span className="text-sm font-medium text-[#2a201c]">Sort by:</span>
                 <Select value={sortOption} onValueChange={setSortOption}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[180px] border-[#E6DDD4]">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
@@ -276,42 +289,43 @@ export default function ProductsPage() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
             {/* Filters */}
-            <div className={`${isFilterOpen ? "block" : "hidden"} md:block space-y-6 rounded-lg border p-4`}>
+            <div className={`${isFilterOpen ? "block" : "hidden"} md:block space-y-6 rounded-lg border border-[#E6DDD4] bg-white p-4`}>
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Filters</h2>
-                <Button variant="ghost" size="sm" className="h-8 px-2 md:hidden" onClick={() => setIsFilterOpen(false)}>
+                <h2 className="text-lg font-semibold text-[#2a201c]">Filters</h2>
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-[#C8815F] md:hidden" onClick={() => setIsFilterOpen(false)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
               <div>
-                <h3 className="mb-2 text-sm font-medium">Price Range</h3>
+                <h3 className="mb-2 text-sm font-medium text-[#2a201c]">Price Range</h3>
                 <div className="space-y-4">
                   <Slider
                     defaultValue={[0, 1000]}
                     max={1000}
-                    step={10}
+                    step={50}
                     value={priceRange}
                     onValueChange={handlePriceChange}
+                    className="[&>[role=slider]]:bg-[#C8815F] [&>.bg-primary]:bg-[#C8815F]"
                   />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm">$</span>
+                      <span className="text-sm">Rs.</span>
                       <Input
                         type="number"
                         value={priceRange[0]}
                         onChange={(e) => setPriceRange([Number.parseInt(e.target.value), priceRange[1]])}
-                        className="h-8 w-20"
+                        className="h-8 w-20 border-[#E6DDD4]"
                       />
                     </div>
                     <span className="text-sm">to</span>
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm">$</span>
+                      <span className="text-sm">Rs.</span>
                       <Input
                         type="number"
                         value={priceRange[1]}
                         onChange={(e) => setPriceRange([priceRange[0], Number.parseInt(e.target.value)])}
-                        className="h-8 w-20"
+                        className="h-8 w-20 border-[#E6DDD4]"
                       />
                     </div>
                   </div>
@@ -319,8 +333,8 @@ export default function ProductsPage() {
               </div>
 
               <Accordion type="multiple" className="w-full">
-                <AccordionItem value="categories">
-                  <AccordionTrigger className="text-sm font-medium">Categories</AccordionTrigger>
+                <AccordionItem value="categories" className="border-b border-[#E6DDD4]">
+                  <AccordionTrigger className="text-sm font-medium text-[#2a201c]">Categories</AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
                       {categories.map((category) => (
@@ -329,6 +343,7 @@ export default function ProductsPage() {
                             id={`category-${category.id}`}
                             checked={selectedCategories.includes(category.id)}
                             onCheckedChange={() => toggleCategory(category.id)}
+                            className="border-[#C8815F] [&[data-state=checked]]:bg-[#C8815F]"
                           />
                           <label
                             htmlFor={`category-${category.id}`}
@@ -341,34 +356,35 @@ export default function ProductsPage() {
                     </div>
                   </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="brands">
-                  <AccordionTrigger className="text-sm font-medium">Brands</AccordionTrigger>
+                <AccordionItem value="types" className="border-b border-[#E6DDD4]">
+                  <AccordionTrigger className="text-sm font-medium text-[#2a201c]">Types</AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
-                      {brands.map((brand) => (
-                        <div key={brand.id} className="flex items-center space-x-2">
+                      {types.map((type) => (
+                        <div key={type.id} className="flex items-center space-x-2">
                           <Checkbox
-                            id={`brand-${brand.id}`}
-                            checked={selectedBrands.includes(brand.id)}
-                            onCheckedChange={() => toggleBrand(brand.id)}
+                            id={`type-${type.id}`}
+                            checked={selectedTypes.includes(type.id)}
+                            onCheckedChange={() => toggleType(type.id)}
+                            className="border-[#C8815F] [&[data-state=checked]]:bg-[#C8815F]"
                           />
                           <label
-                            htmlFor={`brand-${brand.id}`}
+                            htmlFor={`type-${type.id}`}
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                           >
-                            {brand.name}
+                            {type.name}
                           </label>
                         </div>
                       ))}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="availability">
-                  <AccordionTrigger className="text-sm font-medium">Availability</AccordionTrigger>
+                <AccordionItem value="availability" className="border-b border-[#E6DDD4]">
+                  <AccordionTrigger className="text-sm font-medium text-[#2a201c]">Availability</AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="in-stock" />
+                        <Checkbox id="in-stock" className="border-[#C8815F] [&[data-state=checked]]:bg-[#C8815F]" />
                         <label
                           htmlFor="in-stock"
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -377,7 +393,7 @@ export default function ProductsPage() {
                         </label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="on-sale" />
+                        <Checkbox id="on-sale" className="border-[#C8815F] [&[data-state=checked]]:bg-[#C8815F]" />
                         <label
                           htmlFor="on-sale"
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -391,11 +407,11 @@ export default function ProductsPage() {
               </Accordion>
 
               <Button
-                className="w-full"
+                className="w-full border-[#C8815F] text-[#C8815F] hover:bg-[#C8815F]/10"
                 variant="outline"
                 onClick={() => {
                   setSelectedCategories([])
-                  setSelectedBrands([])
+                  setSelectedTypes([])
                   setPriceRange([0, 1000])
                 }}
               >
@@ -408,80 +424,66 @@ export default function ProductsPage() {
               {sortedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {sortedProducts.map((product) => (
-                    <Card key={product.id} className="overflow-hidden">
-                      <Link href={`/products/${product.id}`}>
-                        <div className="relative aspect-square overflow-hidden">
-                          <img
-                            src={product.image || "/placeholder.svg"}
-                            alt={product.name}
-                            className="h-full w-full object-cover transition-transform hover:scale-105"
-                          />
-                          {product.isNew && (
-                            <Badge className="absolute left-2 top-2 bg-green-500 hover:bg-green-600">New</Badge>
-                          )}
-                          {product.isSale && (
-                            <Badge variant="destructive" className="absolute right-2 top-2">
-                              Sale
-                            </Badge>
-                          )}
+                    <Card key={product.id} className="overflow-hidden border-none">
+                      <div className="relative h-48 w-full overflow-hidden">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="h-full w-full object-cover transition-transform hover:scale-105"
+                        />
+                        {product.isNew && (
+                          <span className="absolute left-2 top-2 bg-green-500 px-2 py-1 text-xs font-bold text-white rounded-full">
+                            New
+                          </span>
+                        )}
+                        {product.isSale && (
+                          <span className="absolute right-2 top-2 bg-red-500 px-2 py-1 text-xs font-bold text-white rounded-full">
+                            Sale
+                          </span>
+                        )}
+                      </div>
+                      <CardContent className="p-5 bg-white">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-lg text-[#2a201c]">{product.name}</h3>
+                          <span className="text-[#C8815F] font-semibold">
+                            {product.originalPrice ? (
+                              <>Rs. {product.price}</>
+                            ) : (
+                              <>Rs. {product.price}</>
+                            )}
+                          </span>
                         </div>
-                      </Link>
-                      <CardContent className="p-4">
-                        <div className="mb-1 text-sm text-muted-foreground">{product.category}</div>
-                        <Link href={`/products/${product.id}`} className="hover:underline">
-                          <h3 className="line-clamp-1 text-lg font-medium">{product.name}</h3>
-                        </Link>
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${
-                                  i < Math.floor(product.rating)
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : i < product.rating
-                                      ? "fill-yellow-400 text-yellow-400 [clip-path:inset(0_50%_0_0)]"
-                                      : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm text-muted-foreground">{product.rating}</span>
-                        </div>
-                        <div className="mt-2 flex items-center gap-2">
-                          {product.originalPrice ? (
-                            <>
-                              <span className="font-medium text-primary">${product.price.toFixed(2)}</span>
-                              <span className="text-sm text-muted-foreground line-through">
-                                ${product.originalPrice.toFixed(2)}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="font-medium">${product.price.toFixed(2)}</span>
-                          )}
+                        <p className="text-gray-600 text-sm mb-4">{product.description}</p>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs px-2 py-1 bg-[#f8f5f2] text-[#C8815F] rounded-full">
+                            {product.category}
+                          </span>
+                          <Button 
+                            variant="ghost" 
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-3 text-[#C8815F] hover:text-[#C8815F]/90 hover:bg-[#f8f5f2]"
+                          >
+                            <CirclePlus className="mr-1 h-4 w-4" /> Add to Cart
+                          </Button>
                         </div>
                       </CardContent>
-                      <CardFooter className="p-4 pt-0">
-                        <Button className="w-full">Add to Cart</Button>
-                      </CardFooter>
                     </Card>
                   ))}
                 </div>
               ) : (
-                <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-                    <X className="h-10 w-10 text-muted-foreground" />
+                <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border border-dashed border-[#E6DDD4] p-8 text-center bg-white">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#f8f5f2]">
+                    <X className="h-10 w-10 text-[#C8815F]" />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold">No products found</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <h3 className="mt-4 text-lg font-semibold text-[#2a201c]">No items found</h3>
+                  <p className="mt-2 text-sm text-gray-600">
                     Try adjusting your filters to find what you're looking for.
                   </p>
                   <Button
                     variant="outline"
-                    className="mt-4"
+                    className="mt-4 border-[#C8815F] text-[#C8815F] hover:bg-[#C8815F]/10"
                     onClick={() => {
                       setSelectedCategories([])
-                      setSelectedBrands([])
+                      setSelectedTypes([])
                       setPriceRange([0, 1000])
                     }}
                   >
