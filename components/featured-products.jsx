@@ -51,7 +51,7 @@ export default function FeaturedProducts() {
       price: 250,
       description: "Soft, fluffy rolls with a swirl of cinnamon sugar, topped with cream cheese frosting.",
       category: "Pastries",
-      image: "https://images.unsplash.com/photo-1583527972662-9453d6fadc6f?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      image: "https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
     {
       id: 7,
@@ -67,7 +67,7 @@ export default function FeaturedProducts() {
       price: 100,
       description: "Soft, pillowy traditional naan bread baked in our tandoor oven, brushed with butter.",
       category: "Bread",
-      image: "https://images.unsplash.com/photo-1596428003957-4d5d849b6e9c?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+      image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
     },
   ]
 
