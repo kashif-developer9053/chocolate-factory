@@ -22,7 +22,58 @@ export default function ContactPage() {
     message: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+const faqs = [
+  {
+    question: "Where do you source your imported chocolates from?",
+    answer:
+      "We source our imported chocolates from renowned chocolatiers and manufacturers around the world, including Switzerland, Belgium, France, Dubai, UK, and Saudi Arabia. We prioritize quality and authenticity to bring you the finest chocolates.",
+  },
+  {
+    question: "Are your imported chocolates available year-round, or do you have seasonal offerings?",
+    answer:
+      "While many of our imported chocolates are available year-round, we also offer seasonal selections for holidays and special occasions. Check our website or store for the latest offerings.",
+  },
+  {
+    question: "Do you offer chocolates with specific cocoa percentages or flavor profiles?",
+    answer:
+      "Yes, we curate a variety of chocolates with different cocoa percentages and flavor profiles, including dark, milk, and white chocolates to suit every preference.",
+  },
+  {
+    question: "Can I find limited edition or exclusive chocolates at your store?",
+    answer:
+      "Absolutely! We frequently feature limited edition and exclusive chocolates not available elsewhere for unique and rare chocolate experiences.",
+  },
+  {
+    question: "How do you ensure the quality and freshness of your imported chocolates?",
+    answer:
+      "Our chocolates are stored and handled with care under strict standards, and our inventory is regularly rotated to ensure optimal freshness and flavor.",
+  },
+  {
+    question: "Do you offer gift packaging or customized gift options for special occasions?",
+    answer:
+      "Yes, we offer gift packaging and customized options for birthdays, weddings, and corporate events. Let us help you craft the perfect gift.",
+  },
+  {
+    question: "Can I request specific brands or types of chocolates for special orders?",
+    answer:
+      "Certainly! We welcome requests for specific brands or types. Contact us and we’ll do our best to accommodate your preferences.",
+  },
+  {
+    question: "Do you provide information about the origin and ingredients of your imported chocolates?",
+    answer:
+      "Yes, we share detailed origin and ingredient information. Our staff is always available to help you make informed choices.",
+  },
+  {
+    question: "Are your imported chocolates suitable for individuals with dietary restrictions or allergies?",
+    answer:
+      "Many of our chocolates contain common allergens, but we also offer suitable options. Let us know your dietary needs and we’ll assist accordingly.",
+  },
+];
+  const [activeIndex, setActiveIndex] = useState(null);
 
+  const toggle = (index) => {
+    setActiveIndex(index === activeIndex ? null : index);
+  };
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -93,24 +144,8 @@ export default function ContactPage() {
                 </div>
               </div>
               <div className="hidden md:block relative h-[500px]">
-                <div className="absolute top-0 right-0 h-[400px] w-[80%] rounded-lg overflow-hidden shadow-2xl transform rotate-3 border-8 border-white z-10">
-                  <Image
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-                    alt="Bakery items"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full overflow-hidden shadow-xl border-4 border-white transform -rotate-6 z-20">
-                  <Image
-                    src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
-                    alt="Pastries"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                  />
-                </div>
+             
+                
               </div>
             </div>
           </div>
@@ -139,47 +174,26 @@ export default function ContactPage() {
                       icon: Mail,
                       title: "Email Us",
                       subtitle: "We'll respond within 24 hours",
-                      content: <a href="mailto:info@chaletcafe.com" className="mt-1 block text-[#C8815F] font-medium hover:underline">info@chaletcafe.com</a>,
+                      content: <a href="mailto: thechocolatesfactory@icloud.com" className="mt-1 block text-[#C8815F] font-medium hover:underline"> thechocolatesfactory@icloud.com</a>,
                     },
                     {
                       icon: Phone,
                       title: "Call Us",
                       subtitle: "Mon-Sat from 8am to 10pm",
-                      content: <a href="tel:+921234567890" className="mt-1 block text-[#C8815F] font-medium hover:underline">+92 123 456 7890</a>,
+                      content: <a href="tel:+923165658165" className="mt-1 block text-[#C8815F] font-medium hover:underline">+92316 565 81 65</a>,
                     },
                     {
                       icon: MapPin,
                       title: "Visit Us",
-                      subtitle: "Come enjoy our bakery in person",
+                    
                       content: (
                         <address className="mt-1 not-italic text-gray-700">
-                          123 Cafe Street<br />
-                          F-7 Markaz<br />
-                          Islamabad, Pakistan
+                          Plaza no. 181<br/> Shop no.9 <br/>Lower Ground, Civic Center <br/> Bahria Town, D
+Phase 4 <br/> Islamabad
                         </address>
                       ),
                     },
-                    {
-                      icon: Clock,
-                      title: "Opening Hours",
-                      subtitle: "Our bakery is open",
-                      content: (
-                        <div className="mt-3 space-y-2 text-gray-700">
-                          <div className="flex justify-between border-b border-dashed border-gray-200 pb-1">
-                            <span>Monday - Friday</span>
-                            <span className="font-medium">8:00 AM - 10:00 PM</span>
-                          </div>
-                          <div className="flex justify-between border-b border-dashed border-gray-200 pb-1">
-                            <span>Saturday</span>
-                            <span className="font-medium">9:00 AM - 11:00 PM</span>
-                          </div>
-                          <div className="flex justify-between pb-1">
-                            <span>Sunday</span>
-                            <span className="font-medium">9:00 AM - 8:00 PM</span>
-                          </div>
-                        </div>
-                      ),
-                    },
+                  
                   ].map((item, index) => (
                     <div key={index} className="relative transform hover:-translate-y-1 transition-transform">
                       <div className="absolute -left-4 w-8 h-8 rounded-full bg-[#C8815F] flex items-center justify-center">
@@ -284,32 +298,7 @@ export default function ContactPage() {
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <Label className="text-[#2a201c] font-semibold">What would you like to contact us about?</Label>
-                      <RadioGroup
-                        value={formData.subject}
-                        onValueChange={handleRadioChange}
-                        className="grid gap-3 sm:grid-cols-2"
-                      >
-                        {[
-                          { value: "general", label: "General Inquiry", icon: MessageCircle },
-                          { value: "reservation", label: "Table Reservation", icon: Utensils },
-                          { value: "specialorder", label: "Special Order", icon: Cake },
-                          { value: "feedback", label: "Feedback", icon: MessageSquare },
-                        ].map((option, index) => (
-                          <div
-                            key={option.value}
-                            className="flex items-center space-x-2 bg-[#f8f5f2] p-3 rounded-md border border-gray-100 hover:bg-[#C8815F]/10 transition-colors transform hover:-translate-y-1"
-                          >
-                            <RadioGroupItem value={option.value} id={option.value} className="text-[#C8815F]" />
-                            <option.icon className="h-5 w-5 text-[#C8815F] ml-2" />
-                            <Label htmlFor={option.value} className="font-normal text-[#2a201c] cursor-pointer flex-1">
-                              {option.label}
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
+                
 
                     <div className="space-y-2 transform hover:-translate-y-1 transition-transform">
                       <Label htmlFor="message" className="text-[#2a201c] font-semibold">Your Message</Label>
@@ -416,60 +405,31 @@ export default function ContactPage() {
         </section>
 
         {/* FAQs - Enhanced with Icons and Animations */}
-        <section className="py-20 bg-[#f8f5f2] relative overflow-hidden">
-          <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-[#C8815F]/5 translate-y-1/2 -translate-x-1/2"></div>
-          <div className="container relative z-10">
-            <div className="mx-auto max-w-3xl text-center mb-10">
-              <span className="inline-block px-4 py-1 rounded-full bg-[#C8815F]/10 text-[#C8815F] text-sm font-medium mb-4 animate-pulse">Common Questions</span>
-              <h2 className="text-3xl md:text-4xl font-light text-[#2a201c]">Frequently Asked Questions</h2>
-            </div>
-            
-            <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
-              {[
-                {
-                  icon: Cake,
-                  question: "Do you take custom cake orders?",
-                  answer: "Yes! We love creating custom cakes for special occasions. Please contact us at least 48 hours in advance for custom orders.",
-                },
-                {
-                  icon: Truck,
-                  question: "Do you offer delivery services?",
-                  answer: "We offer delivery within Islamabad. Delivery fees apply based on location, and orders must be placed at least 4 hours in advance.",
-                },
-                {
-                  icon: Utensils,
-                  question: "Are your products halal?",
-                  answer: "Yes, all our products are halal certified. We use only high-quality, halal-certified ingredients in all our preparations.",
-                },
-                {
-                  icon: MessageSquare,
-                  question: "Do you cater for events?",
-                  answer: "Yes, we offer catering services for events of all sizes. Contact us for a customized menu and quote for your special occasion.",
-                },
-              ].map((faq, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-all border border-gray-100 transform hover:-translate-y-1"
-                  style={{ animation: `fadeInUp 0.5s ease-out ${index * 0.2}s both` }}
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-[#C8815F]/10 flex items-center justify-center">
-                      <faq.icon className="h-5 w-5 text-[#C8815F]" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-[#2a201c]">{faq.question}</h3>
-                  </div>
-                  <p className="text-gray-600">{faq.answer}</p>
-                </div>
-              ))}
-            </div>
-            
-            <div className="text-center mt-8">
-              <Button asChild size="lg" variant="outline" className="border-[#C8815F] text-[#C8815F] hover:bg-[#C8815F]/10 transform hover:scale-105 transition-transform">
-                <Link href="/faq">View All FAQs</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
+<div className="py-20 bg-[#f8f5f2] relative overflow-hidden">
+  <div className="w-[60%] mx-auto space-y-4">
+    {faqs.map((faq, index) => (
+      <div key={index} className="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <button
+          onClick={() => toggle(index)}
+          className="w-full px-6 py-4 text-left font-medium text-[#2a201c] flex justify-between items-center hover:bg-[#f2ece9] transition-all"
+        >
+          <span>{faq.question}</span>
+          <span className="text-[#C8815F] text-xl">
+            {activeIndex === index ? '-' : '+'}
+          </span>
+        </button>
+        {activeIndex === index && (
+          <div className="px-6 pb-4 text-gray-600">{faq.answer}</div>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+
+
+
+   
+
 
         {/* CTA Section - Enhanced with Gradient and Parallax */}
         <section className="bg-gradient-to-b from-[#C8815F] to-[#A66B4F] py-16 text-white relative overflow-hidden">

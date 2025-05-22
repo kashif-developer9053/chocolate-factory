@@ -40,7 +40,7 @@ export default function AboutPage() {
                   <Button asChild size="lg" className="bg-[#C8815F] hover:bg-[#A66B4F] text-white border-none px-8">
                     <Link href="/menu">Our Menu</Link>
                   </Button>
-                  <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                  <Button asChild size="lg" variant="outline" className="border-white bg-red text-white hover:bg-white/10">
                     <Link href="/contact">Contact Us</Link>
                   </Button>
                 </div>
@@ -330,7 +330,7 @@ export default function AboutPage() {
                 <Button asChild size="lg" className="bg-white text-[#C8815F] hover:bg-gray-100 px-8">
                   <Link href="/menu">Browse Our Menu</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/20">
+                <Button asChild size="lg" variant="outline" className="border-white bg-red text-white hover:bg-white/20">
                   <Link href="/contact">Visit Us Today</Link>
                 </Button>
               </div>
