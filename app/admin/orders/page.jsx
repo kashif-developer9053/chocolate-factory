@@ -1,481 +1,413 @@
-"use client"
+// app/admin/orders/page.jsx
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import {
-  Search,
-  MoreHorizontal,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  FileText,
-  Truck,
-  XCircle,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "@/hooks/use-toast"
+import { useState, useEffect } from "react";
+import { Eye, Search, Filter, Download, Package, Truck, CheckCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import axios from "axios";
 
-export default function OrdersPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [sortField, setSortField] = useState("date")
-  const [sortDirection, setSortDirection] = useState("desc")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [stats, setStats] = useState({
+    total: 0,
+    confirmed: 0,
+    processing: 0,
+    shipped: 0,
+    delivered: 0,
+    cancelled: 0
+  });
 
-  // Mock orders data
-  const allOrders = [
-    {
-      id: "ORD-7352",
-      customer: "Sarah Johnson",
-      email: "sarah.johnson@example.com",
-      date: "2023-05-15 14:30",
-      total: 129.99,
-      status: "Delivered",
-      paymentStatus: "Paid",
-      items: 3,
-    },
-    {
-      id: "ORD-7351",
-      customer: "Michael Chen",
-      email: "michael.chen@example.com",
-      date: "2023-05-15 13:45",
-      total: 259.98,
-      status: "Processing",
-      paymentStatus: "Paid",
-      items: 2,
-    },
-    {
-      id: "ORD-7350",
-      customer: "Emily Rodriguez",
-      email: "emily.rodriguez@example.com",
-      date: "2023-05-15 11:20",
-      total: 89.99,
-      status: "Shipped",
-      paymentStatus: "Paid",
-      items: 1,
-    },
-    {
-      id: "ORD-7349",
-      customer: "David Kim",
-      email: "david.kim@example.com",
-      date: "2023-05-15 10:15",
-      total: 199.99,
-      status: "Pending",
-      paymentStatus: "Pending",
-      items: 4,
-    },
-    {
-      id: "ORD-7348",
-      customer: "Jessica Taylor",
-      email: "jessica.taylor@example.com",
-      date: "2023-05-15 09:30",
-      total: 149.99,
-      status: "Delivered",
-      paymentStatus: "Paid",
-      items: 2,
-    },
-    {
-      id: "ORD-7347",
-      customer: "Robert Johnson",
-      email: "robert.johnson@example.com",
-      date: "2023-05-14 16:45",
-      total: 79.99,
-      status: "Cancelled",
-      paymentStatus: "Refunded",
-      items: 1,
-    },
-    {
-      id: "ORD-7346",
-      customer: "Amanda Lee",
-      email: "amanda.lee@example.com",
-      date: "2023-05-14 14:20",
-      total: 349.97,
-      status: "Delivered",
-      paymentStatus: "Paid",
-      items: 3,
-    },
-    {
-      id: "ORD-7345",
-      customer: "Thomas Wilson",
-      email: "thomas.wilson@example.com",
-      date: "2023-05-14 11:30",
-      total: 59.99,
-      status: "Processing",
-      paymentStatus: "Paid",
-      items: 1,
-    },
-    {
-      id: "ORD-7344",
-      customer: "Olivia Martinez",
-      email: "olivia.martinez@example.com",
-      date: "2023-05-14 10:15",
-      total: 129.99,
-      status: "Shipped",
-      paymentStatus: "Paid",
-      items: 2,
-    },
-    {
-      id: "ORD-7343",
-      customer: "William Brown",
-      email: "william.brown@example.com",
-      date: "2023-05-14 09:45",
-      total: 89.99,
-      status: "Pending",
-      paymentStatus: "Pending",
-      items: 1,
-    },
-    {
-      id: "ORD-7342",
-      customer: "Sophia Garcia",
-      email: "sophia.garcia@example.com",
-      date: "2023-05-13 15:30",
-      total: 199.98,
-      status: "Delivered",
-      paymentStatus: "Paid",
-      items: 2,
-    },
-    {
-      id: "ORD-7341",
-      customer: "James Miller",
-      email: "james.miller@example.com",
-      date: "2023-05-13 13:20",
-      total: 299.99,
-      status: "Returned",
-      paymentStatus: "Refunded",
-      items: 1,
-    },
-  ]
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
-  // Filter orders
-  const filteredOrders = allOrders.filter((order) => {
-    // Search filter
-    if (
-      searchQuery &&
-      !order.id.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !order.customer.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !order.email.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("/api/orders?limit=50");
+      if (response.data.success) {
+        const ordersData = response.data.data.orders;
+        setOrders(ordersData);
+        
+        // Calculate stats
+        const stats = ordersData.reduce((acc, order) => {
+          acc.total++;
+          acc[order.orderStatus] = (acc[order.orderStatus] || 0) + 1;
+          return acc;
+        }, { total: 0, confirmed: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0 });
+        
+        setStats(stats);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
     }
-
-    // Status filter
-    if (statusFilter !== "all" && order.status !== statusFilter) {
-      return false
-    }
-
-    return true
-  })
-
-  // Sort orders
-  const sortedOrders = [...filteredOrders].sort((a, b) => {
-    let aValue = a[sortField]
-    let bValue = b[sortField]
-
-    if (sortField === "date") {
-      aValue = new Date(aValue)
-      bValue = new Date(bValue)
-    } else if (typeof aValue === "string") {
-      aValue = aValue.toLowerCase()
-      bValue = bValue.toLowerCase()
-    }
-
-    if (aValue < bValue) {
-      return sortDirection === "asc" ? -1 : 1
-    }
-    if (aValue > bValue) {
-      return sortDirection === "asc" ? 1 : -1
-    }
-    return 0
-  })
-
-  // Pagination
-  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage)
-  const paginatedOrders = sortedOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  const toggleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortField(field)
-      setSortDirection("desc")
-    }
-  }
-
-  const updateOrderStatus = (orderId, newStatus) => {
-    // In a real app, you would call an API to update the order status
-    toast({
-      title: "Order status updated",
-      description: `Order ${orderId} has been marked as ${newStatus}`,
-    })
-  }
-
-  const printInvoice = (orderId) => {
-    // In a real app, you would generate and print an invoice
-    toast({
-      title: "Generating invoice",
-      description: `Preparing invoice for order ${orderId}`,
-    })
-  }
-
-  const statuses = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"]
+  };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Delivered":
-        return "bg-green-500"
-      case "Shipped":
-        return "bg-blue-500"
-      case "Processing":
-        return "bg-yellow-500"
-      case "Pending":
-        return "bg-orange-500"
-      case "Cancelled":
-        return "bg-red-500"
-      case "Returned":
-        return "bg-purple-500"
-      default:
-        return "bg-gray-500"
+    const colors = {
+      confirmed: "bg-yellow-100 text-yellow-800",
+      processing: "bg-blue-100 text-blue-800",
+      shipped: "bg-purple-100 text-purple-800",
+      delivered: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800"
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const getStatusIcon = (status) => {
+    const icons = {
+      confirmed: <Package className="h-3 w-3" />,
+      processing: <Package className="h-3 w-3" />,
+      shipped: <Truck className="h-3 w-3" />,
+      delivered: <CheckCircle className="h-3 w-3" />,
+      cancelled: <XCircle className="h-3 w-3" />
+    };
+    return icons[status] || <Package className="h-3 w-3" />;
+  };
+
+  const formatPrice = (price) => `Rs. ${price.toFixed(0)}`;
+  const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = 
+      order.customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order._id.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || order.orderStatus === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const response = await axios.patch(`/api/orders/${orderId}`, {
+        orderStatus: newStatus
+      });
+      
+      if (response.data.success) {
+        // Update local state
+        setOrders(orders.map(order => 
+          order._id === orderId 
+            ? { ...order, orderStatus: newStatus }
+            : order
+        ));
+        
+        // Update selected order if it's the same
+        if (selectedOrder && selectedOrder._id === orderId) {
+          setSelectedOrder({ ...selectedOrder, orderStatus: newStatus });
+        }
+        
+        // Refresh stats
+        fetchOrders();
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
-          <p className="text-muted-foreground">Manage customer orders and fulfillment</p>
-        </div>
+    <div className="container mx-auto p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Order Management</h1>
+        <p className="text-muted-foreground">Manage and track all customer orders</p>
       </div>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="flex flex-1 items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search orders..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setCurrentPage(1)
-              }}
-            />
-          </div>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value)
-              setCurrentPage(1)
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {statuses.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold">{stats.total}</p>
+              <p className="text-sm text-muted-foreground">Total Orders</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-yellow-600">{stats.confirmed}</p>
+              <p className="text-sm text-muted-foreground">Confirmed</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-600">{stats.processing}</p>
+              <p className="text-sm text-muted-foreground">Processing</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600">{stats.shipped}</p>
+              <p className="text-sm text-muted-foreground">Shipped</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">{stats.delivered}</p>
+              <p className="text-sm text-muted-foreground">Delivered</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
+              <p className="text-sm text-muted-foreground">Cancelled</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="cursor-pointer" onClick={() => toggleSort("id")}>
-                <div className="flex items-center gap-1">
-                  Order
-                  {sortField === "id" && <ArrowUpDown className="h-4 w-4 text-muted-foreground" />}
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => toggleSort("date")}>
-                <div className="flex items-center gap-1">
-                  Date
-                  {sortField === "date" && <ArrowUpDown className="h-4 w-4 text-muted-foreground" />}
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => toggleSort("customer")}>
-                <div className="flex items-center gap-1">
-                  Customer
-                  {sortField === "customer" && <ArrowUpDown className="h-4 w-4 text-muted-foreground" />}
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => toggleSort("status")}>
-                <div className="flex items-center gap-1">
-                  Status
-                  {sortField === "status" && <ArrowUpDown className="h-4 w-4 text-muted-foreground" />}
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer" onClick={() => toggleSort("paymentStatus")}>
-                <div className="flex items-center gap-1">
-                  Payment
-                  {sortField === "paymentStatus" && <ArrowUpDown className="h-4 w-4 text-muted-foreground" />}
-                </div>
-              </TableHead>
-              <TableHead className="cursor-pointer text-right" onClick={() => toggleSort("total")}>
-                <div className="flex items-center justify-end gap-1">
-                  Total
-                  {sortField === "total" && <ArrowUpDown className="h-4 w-4 text-muted-foreground" />}
-                </div>
-              </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedOrders.length > 0 ? (
-              paginatedOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <div className="font-medium">{order.id}</div>
-                    <div className="text-sm text-muted-foreground">{order.items} items</div>
-                  </TableCell>
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>
-                    <div>{order.customer}</div>
-                    <div className="text-sm text-muted-foreground">{order.email}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className={`h-2 w-2 rounded-full ${getStatusColor(order.status)}`}></div>
-                      <span>{order.status}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        order.paymentStatus === "Paid"
-                          ? "default"
-                          : order.paymentStatus === "Pending"
-                            ? "outline"
-                            : "destructive"
-                      }
-                    >
-                      {order.paymentStatus}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">${order.total.toFixed(2)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/orders/${order.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => printInvoice(order.id)}>
-                          <FileText className="mr-2 h-4 w-4" />
-                          Print Invoice
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {order.status !== "Delivered" && order.status !== "Cancelled" && (
-                          <>
-                            {order.status === "Pending" && (
-                              <DropdownMenuItem onClick={() => updateOrderStatus(order.id, "Processing")}>
-                                <Truck className="mr-2 h-4 w-4" />
-                                Mark as Processing
-                              </DropdownMenuItem>
-                            )}
-                            {order.status === "Processing" && (
-                              <DropdownMenuItem onClick={() => updateOrderStatus(order.id, "Shipped")}>
-                                <Truck className="mr-2 h-4 w-4" />
-                                Mark as Shipped
-                              </DropdownMenuItem>
-                            )}
-                            {order.status === "Shipped" && (
-                              <DropdownMenuItem onClick={() => updateOrderStatus(order.id, "Delivered")}>
-                                <Truck className="mr-2 h-4 w-4" />
-                                Mark as Delivered
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => updateOrderStatus(order.id, "Cancelled")}>
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Cancel Order
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No orders found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Previous page</span>
-            </Button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                variant={page === currentPage ? "default" : "outline"}
-                size="icon"
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </Button>
-            ))}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-              <span className="sr-only">Next page</span>
+      {/* Filters */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by customer name, email, or order ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="shipped">Shipped</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export
             </Button>
           </div>
-        </div>
-      )}
+        </CardContent>
+      </Card>
+
+      {/* Orders Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Orders ({filteredOrders.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2">Order ID</th>
+                  <th className="text-left p-2">Customer</th>
+                  <th className="text-left p-2">Items</th>
+                  <th className="text-left p-2">Total</th>
+                  <th className="text-left p-2">Status</th>
+                  <th className="text-left p-2">Date</th>
+                  <th className="text-left p-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => (
+                  <tr key={order._id} className="border-b hover:bg-gray-50">
+                    <td className="p-2">
+                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                        #{order._id.slice(-6)}
+                      </code>
+                    </td>
+                    <td className="p-2">
+                      <div>
+                        <p className="font-medium">
+                          {order.customer.firstName} {order.customer.lastName}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{order.customer.email}</p>
+                      </div>
+                    </td>
+                    <td className="p-2">
+                      <span className="text-sm">
+                        {order.items.reduce((total, item) => total + item.quantity, 0)} items
+                      </span>
+                    </td>
+                    <td className="p-2">
+                      <span className="font-medium">{formatPrice(order.pricing.total)}</span>
+                    </td>
+                    <td className="p-2">
+                      <Badge className={getStatusColor(order.orderStatus)}>
+                        {getStatusIcon(order.orderStatus)}
+                        <span className="ml-1 capitalize">{order.orderStatus}</span>
+                      </Badge>
+                    </td>
+                    <td className="p-2">
+                      <span className="text-sm">{formatDate(order.orderDate)}</span>
+                    </td>
+                    <td className="p-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl">
+                          <DialogHeader>
+                            <DialogTitle>Order Details #{order._id.slice(-6)}</DialogTitle>
+                          </DialogHeader>
+                          {selectedOrder && (
+                            <div className="space-y-6">
+                              {/* Customer & Address */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                  <h3 className="font-semibold mb-2">Customer Information</h3>
+                                  <div className="space-y-1 text-sm">
+                                    <p><strong>Name:</strong> {selectedOrder.customer.firstName} {selectedOrder.customer.lastName}</p>
+                                    <p><strong>Email:</strong> {selectedOrder.customer.email}</p>
+                                    <p><strong>Phone:</strong> {selectedOrder.customer.phone}</p>
+                                    <p><strong>Username:</strong> {selectedOrder.customer.username}</p>
+                                  </div>
+                                </div>
+                                <div>
+                                  <h3 className="font-semibold mb-2">Delivery Address</h3>
+                                  <div className="space-y-1 text-sm">
+                                    <p>{selectedOrder.address.street}</p>
+                                    <p>{selectedOrder.address.city}</p>
+                                    {selectedOrder.address.postalCode && (
+                                      <p>Postal Code: {selectedOrder.address.postalCode}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <Separator />
+
+                              {/* Order Items */}
+                              <div>
+                                <h3 className="font-semibold mb-3">Order Items</h3>
+                                <div className="space-y-2">
+                                  {selectedOrder.items.map((item, index) => (
+                                    <div key={index} className="flex items-center gap-3 p-3 border rounded">
+                                      <img
+                                        src={item.image || `https://via.placeholder.com/60?text=${encodeURIComponent(item.name)}`}
+                                        alt={item.name}
+                                        className="h-12 w-12 object-cover rounded"
+                                      />
+                                      <div className="flex-1">
+                                        <p className="font-medium">{item.name}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                          {formatPrice(item.price)} × {item.quantity}
+                                        </p>
+                                      </div>
+                                      <div className="font-medium">
+                                        {formatPrice(item.price * item.quantity)}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <Separator />
+
+                              {/* Pricing */}
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span>Subtotal:</span>
+                                  <span>{formatPrice(selectedOrder.pricing.subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Shipping:</span>
+                                  <span>{selectedOrder.pricing.shipping === 0 ? "Free" : formatPrice(selectedOrder.pricing.shipping)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Tax:</span>
+                                  <span>{formatPrice(selectedOrder.pricing.tax)}</span>
+                                </div>
+                                <Separator />
+                                <div className="flex justify-between font-bold text-lg">
+                                  <span>Total:</span>
+                                  <span>{formatPrice(selectedOrder.pricing.total)}</span>
+                                </div>
+                              </div>
+
+                              {/* Order Status Update */}
+                              <div>
+                                <h3 className="font-semibold mb-2">Update Order Status</h3>
+                                <div className="flex gap-2">
+                                  {['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
+                                    <Button
+                                      key={status}
+                                      variant={selectedOrder.orderStatus === status ? "default" : "outline"}
+                                      size="sm"
+                                      onClick={() => updateOrderStatus(selectedOrder._id, status)}
+                                      className="capitalize"
+                                    >
+                                      {status}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Notes */}
+                              {selectedOrder.notes && (
+                                <div>
+                                  <h3 className="font-semibold mb-2">Customer Notes</h3>
+                                  <p className="text-sm bg-gray-50 p-3 rounded">{selectedOrder.notes}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }

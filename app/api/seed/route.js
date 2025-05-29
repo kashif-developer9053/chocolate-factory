@@ -1,6 +1,6 @@
 // /app/api/seed/route.js
 import { NextResponse } from 'next/server';
-import { seedDatabase } from '@/app/lib/seed';
+import { seedDatabase } from '../../api/lib/seed';
 
 // This endpoint is for seeding the database with initial data
 // It should be disabled in production by checking environment variables

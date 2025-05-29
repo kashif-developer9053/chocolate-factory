@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { useCart } from "@/context/CartContext" // Import cart context
 
 export default function MainNav() {
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [cartCount, setCartCount] = useState(0)
+  const { cartCount } = useCart() // Use cart count from context
 
   const routes = [
     {
@@ -94,11 +95,11 @@ export default function MainNav() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild className="relative">
           <Link href="/cart">
             <ShoppingCart className="h-5 w-5" />
             {cartCount > 0 && (
-              <Badge variant="destructive" className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs">
+              <Badge variant="destructive" className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
                 {cartCount}
               </Badge>
             )}
@@ -107,7 +108,7 @@ export default function MainNav() {
         </Button>
       </div>
       {isMenuOpen && (
-        <div className="absolute inset-x-0 top-16 z-50 w-full bg-background p-4 md:hidden">
+        <div className="absolute inset-x-0 top-16 z-50 w-full bg-background p-4 shadow-lg border-b md:hidden">
           <nav className="flex flex-col space-y-4">
             {routes.map((route) => (
               <Link
@@ -121,14 +122,14 @@ export default function MainNav() {
                 {route.label}
               </Link>
             ))}
-            <div className="flex items-center justify-between pt-4">
-              <Link href="/login" className="text-sm font-medium">
+            <div className="flex items-center justify-between pt-4 border-t">
+              <Link href="/login" className="text-sm font-medium hover:text-primary">
                 Login
               </Link>
               <Link href="/cart" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <Badge variant="destructive" className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs">
+                  <Badge variant="destructive" className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center">
                     {cartCount}
                   </Badge>
                 )}

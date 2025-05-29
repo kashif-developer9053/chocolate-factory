@@ -1,24 +1,15 @@
-// /app/api/admin/orders/[id]/route.js
+// app/api/orders/[id]/route.js
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/db';
-import Order from '@/app/lib/models/Order';
-import { admin } from '@/app/lib/auth';
-import { formatError } from '@/app/lib/utils';
+import connectDB from '../../lib/db';
+import Order from '../../lib/models/Order';
+import { formatError } from '../../lib/utils';
 
-// Get order details (admin only)
+// Get single order by ID
 export async function GET(req, { params }) {
   try {
     await connectDB();
     
-    const result = await admin(req);
-    
-    if (result instanceof NextResponse) {
-      return result;
-    }
-    
-    const { id } = params;
-    
-    const order = await Order.findById(id).populate('user', 'name email');
+    const order = await Order.findById(params.id).lean();
     
     if (!order) {
       return NextResponse.json(
@@ -26,11 +17,12 @@ export async function GET(req, { params }) {
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json({
       success: true,
-      data: order,
+      data: order
     });
+
   } catch (error) {
     console.error('Get order error:', error);
     return NextResponse.json(
@@ -40,21 +32,72 @@ export async function GET(req, { params }) {
   }
 }
 
-// /app/api/admin/orders/[id]/route.js (continued)
-export async function PUT(req, { params }) {
+// Update order status
+export async function PATCH(req, { params }) {
   try {
     await connectDB();
     
-    const result = await admin(req);
+    const updateData = await req.json();
     
-    if (result instanceof NextResponse) {
-      return result;
+    // Validate order status if provided
+    if (updateData.orderStatus) {
+      const validStatuses = ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+      if (!validStatuses.includes(updateData.orderStatus)) {
+        return NextResponse.json(
+          { success: false, message: 'Invalid order status' },
+          { status: 400 }
+        );
+      }
     }
+
+    // Validate payment status if provided
+    if (updateData.paymentStatus) {
+      const validPaymentStatuses = ['pending', 'paid', 'failed', 'refunded'];
+      if (!validPaymentStatuses.includes(updateData.paymentStatus)) {
+        return NextResponse.json(
+          { success: false, message: 'Invalid payment status' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      params.id,
+      { 
+        ...updateData,
+        ...(updateData.orderStatus === 'delivered' && { deliveryDate: new Date() })
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!order) {
+      return NextResponse.json(
+        { success: false, message: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Order updated successfully',
+      data: order
+    });
+
+  } catch (error) {
+    console.error('Update order error:', error);
+    return NextResponse.json(
+      { success: false, message: formatError(error) },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete order (admin only)
+export async function DELETE(req, { params }) {
+  try {
+    await connectDB();
     
-    const { id } = params;
-    const { status, trackingNumber, isDelivered, isPaid } = await req.json();
-    
-    const order = await Order.findById(id);
+    const order = await Order.findByIdAndDelete(params.id);
     
     if (!order) {
       return NextResponse.json(
@@ -62,33 +105,14 @@ export async function PUT(req, { params }) {
         { status: 404 }
       );
     }
-    
-    // Update order fields
-    if (status) order.status = status;
-    if (trackingNumber) order.trackingNumber = trackingNumber;
-    
-    if (isDelivered !== undefined) {
-      order.isDelivered = isDelivered;
-      if (isDelivered) {
-        order.deliveredAt = Date.now();
-      }
-    }
-    
-    if (isPaid !== undefined) {
-      order.isPaid = isPaid;
-      if (isPaid) {
-        order.paidAt = Date.now();
-      }
-    }
-    
-    const updatedOrder = await order.save();
-    
+
     return NextResponse.json({
       success: true,
-      data: updatedOrder,
+      message: 'Order deleted successfully'
     });
+
   } catch (error) {
-    console.error('Update order error:', error);
+    console.error('Delete order error:', error);
     return NextResponse.json(
       { success: false, message: formatError(error) },
       { status: 500 }

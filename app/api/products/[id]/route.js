@@ -1,9 +1,9 @@
 // /app/api/products/[id]/route.js
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/db';
-import Product from '@/app/lib/models/Product';
-import { admin } from '@/app/lib/auth';
-import { formatError } from '@/app/lib/utils';
+import connectDB from '../../lib/db';
+import Product from '../../lib/models/Product';
+import { admin } from '../../lib/auth';
+import { formatError } from '../../lib/utils';
 
 // Get a single product
 export async function GET(req, { params }) {

@@ -1,95 +1,87 @@
-// /app/lib/auth.js
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRE = process.env.JWT_EXPIRE || '30d';
+import jwt from "jsonwebtoken"
+import { cookies } from "next/headers"
+import { NextResponse } from "next/server"
+
+const JWT_SECRET = process.env.JWT_SECRET
+const JWT_EXPIRE = process.env.JWT_EXPIRE || "30d"
 
 // Generate JWT Token
 export const generateToken = (id) => {
   return jwt.sign({ id }, JWT_SECRET, {
     expiresIn: JWT_EXPIRE,
-  });
-};
+  })
+}
 
 // Set JWT cookie
 export const setTokenCookie = (token) => {
-  cookies().set('token', token, {
+  cookies().set("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV !== 'development',
-    sameSite: 'strict',
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "strict",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    path: '/',
-  });
-};
+    path: "/",
+  })
+}
 
 // Get current user from token
-export const getCurrentUser = async (req) => {
+export const getCurrentUser = async () => {
   try {
-    const token = cookies().get('token')?.value;
-    
+    const cookieStore = await cookies() // Await cookies()
+    const token = cookieStore.get("token")?.value
     if (!token) {
-      return null;
+      return null
     }
-    
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const User = (await import('./models/User')).default;
-    const user = await User.findById(decoded.id).select('-password');
-    
-    return user;
+    const decoded = jwt.verify(token, JWT_SECRET)
+    const User = (await import("./models/User")).default
+    const user = await User.findById(decoded.id).select("-password")
+    return user
   } catch (error) {
-    console.error('Auth error:', error);
-    return null;
+    console.error("Auth error:", error)
+    return null
   }
-};
+}
 
 // Middleware to protect routes
-export const protect = async (req) => {
+export const protect = async () => {
   try {
-    const user = await getCurrentUser(req);
-    
+    const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'Not authorized, please login' },
+        { success: false, message: "Not authorized, please login" },
         { status: 401 }
-      );
+      )
     }
-    
-    return { user };
+    return { user }
   } catch (error) {
-    console.error('Protect middleware error:', error);
+    console.error("Protect middleware error:", error)
     return NextResponse.json(
-      { success: false, message: 'Not authorized, please login' },
+      { success: false, message: "Not authorized, please login" },
       { status: 401 }
-    );
+    )
   }
-};
+}
 
 // Admin middleware
-export const admin = async (req) => {
+export const admin = async () => {
   try {
-    const result = await protect(req);
-    
+    const result = await protect()
     if (result instanceof NextResponse) {
-      return result;
+      return result
     }
-    
-    const { user } = result;
-    
-    if (user.role !== 'admin') {
+    const { user } = result
+    if (user.role !== "admin") {
       return NextResponse.json(
-        { success: false, message: 'Not authorized as admin' },
+        { success: false, message: "Not authorized as admin" },
         { status: 403 }
-      );
+      )
     }
-    
-    return { user };
+    return { user }
   } catch (error) {
-    console.error('Admin middleware error:', error);
+    console.error("Admin middleware error:", error)
     return NextResponse.json(
-      { success: false, message: 'Not authorized as admin' },
+      { success: false, message: "Not authorized as admin" },
       { status: 403 }
-    );
+    )
   }
-};
+}
