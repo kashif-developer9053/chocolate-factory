@@ -1,7 +1,7 @@
-// app/checkout/page.jsx
+// app/checkout/page.jsx - Updated with user detection
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -23,6 +23,8 @@ export default function CheckoutPage() {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [orderTrackingNumber, setOrderTrackingNumber] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isUserLoaded, setIsUserLoaded] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -37,6 +39,30 @@ export default function CheckoutPage() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
+
+  // Check if user is logged in on component mount
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setCurrentUser(user);
+        
+        // Pre-fill form with user data if available
+        setFormData(prev => ({
+          ...prev,
+          firstName: user.name?.split(' ')[0] || '',
+          lastName: user.name?.split(' ').slice(1).join(' ') || '',
+          email: user.email || '',
+          phone: user.phone || '',
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setIsUserLoaded(true);
+    }
+  }, []);
 
   // Redirect if cart is empty
   if (cartCount === 0 && !orderPlaced) {
@@ -114,15 +140,27 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
+      // Prepare customer data based on login status
+      const customerData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+      };
+
+      // Add user info based on login status
+      if (currentUser) {
+        customerData.userId = currentUser._id;
+        customerData.username = currentUser.name;
+        customerData.userRole = currentUser.role;
+      } else {
+        customerData.username = "unregistered user";
+        customerData.userId = null;
+      }
+
       // Prepare order data
       const orderData = {
-        customer: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          username: "unregistered user" // As requested, since no auth system
-        },
+        customer: customerData,
         address: {
           street: formData.address,
           city: formData.city,
@@ -145,13 +183,16 @@ export default function CheckoutPage() {
         paymentStatus: "pending",
         orderStatus: "confirmed",
         notes: formData.notes || "",
-        orderDate: new Date().toISOString()
+        orderDate: new Date().toISOString(),
+        isRegisteredUser: !!currentUser
       };
 
       console.log("Placing order:", orderData);
 
       // Make API call to create order
-      const response = await axios.post("/api/orders", orderData);
+      const response = await axios.post("/api/orders", orderData, {
+        withCredentials: true // Include cookies for authentication
+      });
 
       if (response.data.success) {
         setOrderId(response.data.data._id);
@@ -190,6 +231,22 @@ export default function CheckoutPage() {
             Thank you for your order! Your order has been confirmed and we'll start processing it soon.
           </p>
           
+          {/* User-specific message */}
+          {currentUser ? (
+            <div className="bg-blue-100 rounded-lg p-4 mb-6">
+              <p className="text-blue-800 text-sm">
+                Hi {currentUser.name}! Your order has been linked to your account. 
+                You can track it in your profile under "My Orders".
+              </p>
+            </div>
+          ) : (
+            <div className="bg-yellow-100 rounded-lg p-4 mb-6">
+              <p className="text-yellow-800 text-sm">
+                Your order was placed as a guest. Create an account to track your orders easily!
+              </p>
+            </div>
+          )}
+          
           {/* Large Order ID and Tracking Number for easy copying */}
           <div className="bg-white rounded-lg p-6 mb-6 border-2 border-green-200">
             <div className="space-y-4">
@@ -221,6 +278,12 @@ export default function CheckoutPage() {
             <h3 className="font-semibold mb-3 text-center">Order Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
+                <span className="text-gray-600">Customer:</span>
+                <span className="font-semibold">
+                  {currentUser ? currentUser.name : `${formData.firstName} ${formData.lastName}`}
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-600">Total Amount:</span>
                 <span className="font-semibold">{formatPrice(total)}</span>
               </div>
@@ -239,9 +302,19 @@ export default function CheckoutPage() {
             <Button asChild className="w-full" size="lg">
               <Link href="/track-order">Track Your Order</Link>
             </Button>
+            {currentUser && (
+              <Button variant="outline" asChild className="w-full">
+                <Link href="/profile">View in My Orders</Link>
+              </Button>
+            )}
             <Button variant="outline" asChild className="w-full">
               <Link href="/products">Continue Shopping</Link>
             </Button>
+            {!currentUser && (
+              <Button variant="ghost" asChild className="w-full">
+                <Link href="/register">Create Account</Link>
+              </Button>
+            )}
             <Button variant="ghost" asChild className="w-full">
               <Link href="/">Back to Home</Link>
             </Button>
@@ -250,6 +323,18 @@ export default function CheckoutPage() {
           <p className="text-xs text-gray-500 mt-4">
             You can track your order using either your Order ID or Tracking Number along with your email address.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while checking user status
+  if (!isUserLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600 mx-auto mb-4"></div>
+          <p>Loading checkout...</p>
         </div>
       </div>
     );
@@ -265,7 +350,21 @@ export default function CheckoutPage() {
               Back to Cart
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold">Checkout</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Checkout</h1>
+            {currentUser ? (
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <User className="h-4 w-4" />
+                <span>Logged in as {currentUser.name}</span>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-600">
+                <Link href="/login" className="text-blue-600 hover:underline">
+                  Login
+                </Link> to save this order to your account
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -277,6 +376,9 @@ export default function CheckoutPage() {
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
                   Customer Information
+                  {currentUser && (
+                    <span className="text-sm font-normal text-green-600">(From your account)</span>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -314,6 +416,8 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     placeholder="Enter email address"
                     required
+                    readOnly={!!currentUser}
+                    className={currentUser ? "bg-gray-50" : ""}
                   />
                 </div>
                 <div>

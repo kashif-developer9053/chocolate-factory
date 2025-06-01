@@ -1,8 +1,8 @@
 // app/api/orders/[id]/route.js
 import { NextResponse } from 'next/server';
-import connectDB from '../../lib/db';
-import Order from '../../lib/models/Order';
-import { formatError } from '../../lib/utils';
+import connectDB from '../../../lib/db';
+import Order from '../../../lib/models/Order';
+import { formatError } from '../../../lib/utils';
 
 // Get single order by ID
 export async function GET(req, { params }) {

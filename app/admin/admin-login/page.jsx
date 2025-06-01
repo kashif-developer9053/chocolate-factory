@@ -1,15 +1,14 @@
-
 "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
-import { Button } from "../../components/ui/button"
-import { Input } from "../../components/ui/input"
-import { Label } from "../../components/ui/label"
-import { Checkbox } from "../../components/ui/checkbox"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
-import { toast } from "../../hooks/use-toast"
+import { Button } from "../../../components/ui/button"
+import { Input } from "../../../components/ui/input"
+import { Label } from "../../../components/ui/label"
+import { Checkbox } from "../../../components/ui/checkbox"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../components/ui/card"
+import { toast } from "../../../hooks/use-toast"
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -29,65 +28,66 @@ export default function AdminLoginPage() {
     }))
   }
 
-  // In your login form
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-  try {
-    console.log('Submitting with email:', formData.email);
-    
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: formData.email.trim(), // Trim to remove any accidental spaces
-        password: formData.password,
-        rememberMe: formData.rememberMe,
-      }),
-      credentials: "include",
-    });
-    
-    // Debug response
-    console.log('Response status:', response.status);
-    
-    // Try to parse response as text first
-    const textResponse = await response.text();
-    
     try {
-      // Try to parse the text as JSON
-      const data = JSON.parse(textResponse);
+      console.log('Admin login attempt with email:', formData.email);
+      
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password,
+          rememberMe: formData.rememberMe,
+        }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+      console.log('Login API response:', data);
       
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Login failed");
       }
       
+      // Check if user is admin
       if (data.data.role !== "admin") {
         throw new Error("Access denied: Admin privileges required");
       }
+      
+      // 🔥 CRITICAL: Store user data in localStorage
+      console.log('Storing admin user data in localStorage:', data.data);
+      localStorage.setItem('user', JSON.stringify(data.data));
+      
+      // Dispatch auth change event to notify other components
+      window.dispatchEvent(new CustomEvent('authChanged'));
       
       toast({
         title: "Admin login successful",
         description: `Welcome back, ${data.data.name}!`,
       });
       
-      router.push("/admin");
-    } catch (jsonError) {
-      console.error('JSON parsing error:', jsonError);
-      console.error('Raw response:', textResponse);
-      throw new Error('Invalid response from server');
+      console.log('Redirecting to admin dashboard...');
+      
+      // Small delay to ensure localStorage is updated before redirect
+      setTimeout(() => {
+        router.push("/admin");
+      }, 100);
+      
+    } catch (error) {
+      console.error("Admin login error:", error);
+      toast({
+        title: "Login Failed",
+        description: error.message || "An error occurred during login",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    toast({
-      title: "Error",
-      description: error.message || "An error occurred during login",
-      variant: "destructive",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   console.log("Rendering AdminLoginPage") // Debug log
 

@@ -42,11 +42,7 @@ export default function CartPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
-          <MainNav />
-        </div>
-      </header>
+     
       <main className="flex-1">
         <div className="container py-8">
           <h1 className="mb-6 text-3xl font-bold">Your Cart</h1>

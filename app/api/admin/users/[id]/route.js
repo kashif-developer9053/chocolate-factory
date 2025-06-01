@@ -1,11 +1,11 @@
 // /app/api/admin/users/[id]/route.js
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/db';
-import User from '@/app/lib/models/User';
-import { admin } from '@/app/lib/auth';
-import { formatError } from '@/app/lib/utils';
+import connectDB from '../../../lib/db';
+import User from '../../../lib/models/User';
+import { admin } from '../../../lib/auth';
+import { formatError } from '../../../lib/utils';
 
-// Get user details (admin only)
+// Get user details (admin only) - only users with role "user"
 export async function GET(req, { params }) {
   try {
     await connectDB();
@@ -18,11 +18,14 @@ export async function GET(req, { params }) {
     
     const { id } = params;
     
-    const user = await User.findById(id).select('-password');
+    const user = await User.findOne({ 
+      _id: id, 
+      role: 'user' 
+    }).select('-password');
     
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'User not found' },
+        { success: false, message: 'User not found or not a regular user' },
         { status: 404 }
       );
     }
@@ -40,7 +43,7 @@ export async function GET(req, { params }) {
   }
 }
 
-// Update user (admin only)
+// Update user (admin only) - only users with role "user"
 export async function PUT(req, { params }) {
   try {
     await connectDB();
@@ -54,18 +57,25 @@ export async function PUT(req, { params }) {
     const { id } = params;
     const { name, email, role } = await req.json();
     
-    const user = await User.findById(id);
+    const user = await User.findOne({ 
+      _id: id, 
+      role: 'user' 
+    });
     
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'User not found' },
+        { success: false, message: 'User not found or not a regular user' },
         { status: 404 }
       );
     }
     
+    // Update user fields
     user.name = name || user.name;
     user.email = email || user.email;
-    user.role = role || user.role;
+    // Only allow role change if new role is still "user" (prevent privilege escalation)
+    if (role && role === 'user') {
+      user.role = role;
+    }
     
     const updatedUser = await user.save();
     
@@ -76,6 +86,8 @@ export async function PUT(req, { params }) {
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
       },
     });
   } catch (error) {
@@ -87,7 +99,7 @@ export async function PUT(req, { params }) {
   }
 }
 
-// Delete user (admin only)
+// Delete user (admin only) - only users with role "user"
 export async function DELETE(req, { params }) {
   try {
     await connectDB();
@@ -100,11 +112,14 @@ export async function DELETE(req, { params }) {
     
     const { id } = params;
     
-    const user = await User.findById(id);
+    const user = await User.findOne({ 
+      _id: id, 
+      role: 'user' 
+    });
     
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'User not found' },
+        { success: false, message: 'User not found or not a regular user' },
         { status: 404 }
       );
     }
@@ -121,7 +136,7 @@ export async function DELETE(req, { params }) {
     
     return NextResponse.json({
       success: true,
-      message: 'User removed',
+      message: 'User deleted successfully',
     });
   } catch (error) {
     console.error('Delete user error:', error);

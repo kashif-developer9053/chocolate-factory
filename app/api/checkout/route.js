@@ -1,158 +1,201 @@
-// /app/api/checkout/route.js
+// /app/api/orders/route.js - Updated to handle both logged-in and guest users
 import { NextResponse } from 'next/server';
 import connectDB from '@/app/lib/db';
-import Product from '@/app/lib/models/Product';
 import Order from '@/app/lib/models/Order';
-import Discount from '@/app/lib/models/Discount';
-import { protect } from '@/app/lib/auth';
-import { formatError, calculateTotals } from '@/app/lib/utils';
-import { cookies } from 'next/headers';
+import { verifyToken, getTokenFromCookies } from '@/app/lib/auth';
+import { formatError } from '@/app/lib/utils';
 
-// Process checkout
+// Create a new order (both authenticated and guest users)
 export async function POST(req) {
   try {
     await connectDB();
     
-    const result = await protect(req);
+    const orderData = await req.json();
+    const { customer, address, items, pricing, paymentMethod, paymentStatus, orderStatus, notes, isRegisteredUser } = orderData;
     
-    if (result instanceof NextResponse) {
-      return result;
-    }
+    // Check if user is authenticated
+    let authenticatedUser = null;
+    const token = getTokenFromCookies();
     
-    const { user } = result;
-    const { shippingAddress, paymentMethod, discountCode } = await req.json();
-    
-    // Get cart from cookie
-    const cartCookie = cookies().get('cart')?.value;
-    
-    if (!cartCookie) {
-      return NextResponse.json(
-        { success: false, message: 'Cart is empty' },
-        { status: 400 }
-      );
-    }
-    
-    const cart = JSON.parse(decodeURIComponent(cartCookie));
-    
-    if (cart.items.length === 0) {
-      return NextResponse.json(
-        { success: false, message: 'Cart is empty' },
-        { status: 400 }
-      );
-    }
-    
-    // Verify all products exist and have enough stock
-    const productIds = cart.items.map(item => item.product);
-    const products = await Product.find({ _id: { $in: productIds } });
-    
-    // Check if all products exist
-    if (products.length !== productIds.length) {
-      return NextResponse.json(
-        { success: false, message: 'Some products are no longer available' },
-        { status: 400 }
-      );
-    }
-    
-    // Check stock and update product data
-    const orderItems = [];
-    let isOutOfStock = false;
-    
-    for (const item of cart.items) {
-      const product = products.find(p => p._id.toString() === item.product);
-      
-      if (product.stock < item.quantity) {
-        isOutOfStock = true;
-        break;
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded) {
+        // User is authenticated
+        authenticatedUser = decoded.userId;
       }
+    }
+    
+    // Validate required fields
+    if (!customer || !address || !items || !pricing) {
+      return NextResponse.json(
+        { success: false, message: 'Missing required order information' },
+        { status: 400 }
+      );
+    }
+    
+    if (!items || items.length === 0) {
+      return NextResponse.json(
+        { success: false, message: 'Order must contain at least one item' },
+        { status: 400 }
+      );
+    }
+    
+    // Generate order tracking number
+    const generateTrackingNumber = () => {
+      const prefix = 'TRK';
+      const timestamp = Date.now().toString().slice(-6);
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      return `${prefix}${timestamp}${random}`;
+    };
+    
+    // Generate order number
+    const generateOrderNumber = () => {
+      const prefix = 'ORD';
+      const timestamp = Date.now().toString().slice(-8);
+      const random = Math.random().toString(36).substring(2, 4).toUpperCase();
+      return `${prefix}${timestamp}${random}`;
+    };
+    
+    // Prepare order object
+    const newOrder = {
+      orderNumber: generateOrderNumber(),
+      trackingNumber: generateTrackingNumber(),
       
-      orderItems.push({
-        product: product._id,
-        name: product.name,
-        image: product.images[0] || '',
-        price: product.price,
+      // Customer information
+      customer: {
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        email: customer.email,
+        phone: customer.phone,
+        username: customer.username || 'unregistered user',
+        userId: authenticatedUser || customer.userId || null, // Use authenticated user ID if available
+        userRole: customer.userRole || 'guest'
+      },
+      
+      // Shipping address
+      shippingAddress: {
+        street: address.street,
+        city: address.city,
+        postalCode: address.postalCode || 'N/A'
+      },
+      
+      // Order items
+      items: items.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
         quantity: item.quantity,
-      });
-    }
-    
-    if (isOutOfStock) {
-      return NextResponse.json(
-        { success: false, message: 'Some products are out of stock' },
-        { status: 400 }
-      );
-    }
-    
-    // Calculate prices
-    const { itemsPrice, taxPrice, shippingPrice, totalPrice } = calculateTotals(orderItems);
-    
-    // Apply discount if provided
-    let discountAmount = 0;
-    
-    if (discountCode) {
-      const discount = await Discount.findOne({
-        code: discountCode.toUpperCase(),
-        isActive: true,
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
-        usageLimit: { $gt: 0 },
-      });
+        image: item.image || '',
+        total: item.price * item.quantity
+      })),
       
-      if (discount) {
-        // Check minimum purchase amount
-        if (itemsPrice >= discount.minPurchaseAmount) {
-          if (discount.discountType === 'percentage') {
-            discountAmount = (itemsPrice * discount.discountValue) / 100;
-          } else {
-            discountAmount = discount.discountValue;
-          }
-          
-          // Apply max discount amount if set
-          if (discount.maxDiscountAmount && discountAmount > discount.maxDiscountAmount) {
-            discountAmount = discount.maxDiscountAmount;
-          }
-          
-          // Update discount usage count
-          discount.usageCount += 1;
-          if (discount.usageLimit) {
-            discount.usageLimit -= 1;
-          }
-          await discount.save();
-        }
-      }
+      // Pricing
+      subtotal: pricing.subtotal,
+      shipping: pricing.shipping,
+      tax: pricing.tax,
+      total: pricing.total,
+      
+      // Order details
+      paymentMethod: paymentMethod || 'cod',
+      paymentStatus: paymentStatus || 'pending',
+      orderStatus: orderStatus || 'confirmed',
+      notes: notes || '',
+      
+      // User type tracking
+      isRegisteredUser: !!authenticatedUser,
+      isGuestOrder: !authenticatedUser,
+      
+      // Timestamps
+      orderDate: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    // If user is authenticated, link order to user account
+    if (authenticatedUser) {
+      newOrder.user = authenticatedUser;
     }
     
-    // Create order
-    const order = await Order.create({
-      user: user._id,
-      items: orderItems,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      discountAmount,
-      discountCode: discountCode || '',
-      totalPrice: totalPrice - discountAmount,
-    });
+    // Create the order
+    const order = await Order.create(newOrder);
     
-    // Update product stock
-    for (const item of cart.items) {
-      const product = products.find(p => p._id.toString() === item.product);
-      product.stock -= item.quantity;
-      await product.save();
-    }
-    
-    // Clear cart
-    cookies().set('cart', encodeURIComponent(JSON.stringify({ items: [] })), {
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: '/',
+    console.log(`Order created successfully:`, {
+      orderId: order._id,
+      orderNumber: order.orderNumber,
+      trackingNumber: order.trackingNumber,
+      customer: order.customer.username,
+      isRegistered: order.isRegisteredUser,
+      total: order.total
     });
     
     return NextResponse.json({
       success: true,
-      data: order,
+      message: 'Order placed successfully',
+      data: {
+        _id: order._id,
+        orderNumber: order.orderNumber,
+        trackingNumber: order.trackingNumber,
+        customer: order.customer,
+        shippingAddress: order.shippingAddress,
+        items: order.items,
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        tax: order.tax,
+        total: order.total,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        orderStatus: order.orderStatus,
+        orderDate: order.orderDate,
+        isRegisteredUser: order.isRegisteredUser,
+        estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
+      }
     }, { status: 201 });
+    
   } catch (error) {
-    console.error('Checkout error:', error);
+    console.error('Create order error:', error);
+    return NextResponse.json(
+      { success: false, message: formatError(error) },
+      { status: 500 }
+    );
+  }
+}
+
+// Get orders (only for authenticated users)
+export async function GET(req) {
+  try {
+    await connectDB();
+    
+    const token = getTokenFromCookies();
+    
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+    
+    // Get orders for the authenticated user
+    const orders = await Order.find({ user: decoded.userId })
+      .sort({ createdAt: -1 })
+      .select('-__v');
+    
+    return NextResponse.json({
+      success: true,
+      data: orders,
+      count: orders.length
+    });
+    
+  } catch (error) {
+    console.error('Get orders error:', error);
     return NextResponse.json(
       { success: false, message: formatError(error) },
       { status: 500 }
