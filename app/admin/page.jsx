@@ -1,185 +1,254 @@
+// /app/admin/analytics/page.jsx
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowRight,
+import { useState, useEffect } from "react"
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Package, 
+  ShoppingCart, 
+  Users, 
   DollarSign,
-  Users,
-  ShoppingCart,
-  Package,
-  Clock,
   AlertTriangle,
-  CheckCircle2,
-  TrendingUp,
-  TrendingDown,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  BarChart3,
+  PieChart,
+  Target,
+  Star
 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
+import { toast } from "@/hooks/use-toast"
+import axios from "axios"
 
-export default function AdminDashboard() {
-  const [timeRange, setTimeRange] = useState("week")
-
-  const stats = {
-    revenue: {
-      value: 24560,
-      change: 12.5,
-      increasing: true,
+export default function AdminAnalyticsPage() {
+  const [loading, setLoading] = useState(true)
+  const [timeRange, setTimeRange] = useState("30")
+  const [analytics, setAnalytics] = useState({
+    sales: {
+      totalRevenue: 0,
+      totalOrders: 0,
+      averageOrderValue: 0,
+      revenueGrowth: 0,
+      ordersGrowth: 0
     },
     orders: {
-      value: 342,
-      change: 8.2,
-      increasing: true,
+      confirmed: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+      total: 0
+    },
+    products: {
+      total: 0,
+      inStock: 0,
+      lowStock: 0,
+      outOfStock: 0,
+      topProducts: []
     },
     customers: {
-      value: 1253,
-      change: 5.3,
-      increasing: true,
+      total: 0,
+      newCustomers: 0,
+      returningCustomers: 0
     },
-    inventory: {
-      value: 864,
-      change: 2.1,
-      increasing: false,
-    },
+    recentOrders: [],
+    lowStockProducts: []
+  })
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [timeRange])
+
+  const fetchAnalytics = async () => {
+    setLoading(true)
+    try {
+      // Fetch orders data
+      const ordersResponse = await axios.get(`/api/orders?limit=1000`)
+      
+      // Fetch products data
+      const productsResponse = await axios.get(`/api/products?limit=1000`)
+      
+      if (ordersResponse.data.success && productsResponse.data.success) {
+        const orders = ordersResponse.data.data.orders || []
+        const products = productsResponse.data.data.products || []
+        
+        // Calculate analytics
+        const calculatedAnalytics = calculateAnalytics(orders, products, timeRange)
+        setAnalytics(calculatedAnalytics)
+      }
+    } catch (error) {
+      console.error("Error fetching analytics:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load analytics data",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const recentOrders = [
-    {
-      id: "ORD-7352",
-      customer: "Sarah Johnson",
-      avatar: "/placeholder.svg?height=40&width=40",
-      date: "2023-05-15 14:30",
-      amount: 129.99,
-      status: "Delivered",
-      statusColor: "bg-green-500",
-    },
-    {
-      id: "ORD-7351",
-      customer: "Michael Chen",
-      avatar: "/placeholder.svg?height=40&width=40",
-      date: "2023-05-15 13:45",
-      amount: 259.98,
-      status: "Processing",
-      statusColor: "bg-blue-500",
-    },
-    {
-      id: "ORD-7350",
-      customer: "Emily Rodriguez",
-      avatar: "/placeholder.svg?height=40&width=40",
-      date: "2023-05-15 11:20",
-      amount: 89.99,
-      status: "Shipped",
-      statusColor: "bg-purple-500",
-    },
-    {
-      id: "ORD-7349",
-      customer: "David Kim",
-      avatar: "/placeholder.svg?height=40&width=40",
-      date: "2023-05-15 10:15",
-      amount: 199.99,
-      status: "Pending",
-      statusColor: "bg-yellow-500",
-    },
-    {
-      id: "ORD-7348",
-      customer: "Jessica Taylor",
-      avatar: "/placeholder.svg?height=40&width=40",
-      date: "2023-05-15 09:30",
-      amount: 149.99,
-      status: "Delivered",
-      statusColor: "bg-green-500",
-    },
-  ]
+  const calculateAnalytics = (orders, products, days) => {
+    const now = new Date()
+    const startDate = new Date(now.getTime() - (parseInt(days) * 24 * 60 * 60 * 1000))
+    
+    // Filter orders by date range
+    const filteredOrders = orders.filter(order => {
+      const orderDate = new Date(order.orderDate || order.createdAt)
+      return orderDate >= startDate
+    })
 
-  const topProducts = [
-    {
-      id: 1,
-      name: "Wireless Headphones",
-      image: "/placeholder.svg?height=40&width=40",
-      sold: 124,
-      revenue: 16119.76,
-      stock: 45,
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      image: "/placeholder.svg?height=40&width=40",
-      sold: 98,
-      revenue: 19599.02,
-      stock: 32,
-    },
-    {
-      id: 6,
-      name: "Wireless Earbuds",
-      image: "/placeholder.svg?height=40&width=40",
-      sold: 87,
-      revenue: 7829.13,
-      stock: 56,
-    },
-    {
-      id: 4,
-      name: "Coffee Maker",
-      image: "/placeholder.svg?height=40&width=40",
-      sold: 65,
-      revenue: 5849.35,
-      stock: 28,
-    },
-    {
-      id: 8,
-      name: "Digital Camera",
-      image: "/placeholder.svg?height=40&width=40",
-      sold: 42,
-      revenue: 16799.58,
-      stock: 15,
-    },
-  ]
+    // Sales Analytics
+    const totalRevenue = filteredOrders
+      .filter(order => order.orderStatus === 'delivered')
+      .reduce((sum, order) => sum + (order.pricing?.total || order.total || 0), 0)
+    
+    const totalOrders = filteredOrders.length
+    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
-  const lowStockItems = [
-    {
-      id: 8,
-      name: "Digital Camera",
-      image: "/placeholder.svg?height=40&width=40",
-      stock: 5,
-      threshold: 10,
-    },
-    {
-      id: 4,
-      name: "Coffee Maker",
-      image: "/placeholder.svg?height=40&width=40",
-      stock: 8,
-      threshold: 15,
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      image: "/placeholder.svg?height=40&width=40",
-      stock: 12,
-      threshold: 20,
-    },
-  ]
+    // Order Status Analytics
+    const ordersByStatus = filteredOrders.reduce((acc, order) => {
+      acc[order.orderStatus] = (acc[order.orderStatus] || 0) + 1
+      acc.total++
+      return acc
+    }, { confirmed: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0, total: 0 })
+
+    // Product Analytics
+    const inStock = products.filter(p => p.stock > 10).length
+    const lowStock = products.filter(p => p.stock > 0 && p.stock <= 10).length
+    const outOfStock = products.filter(p => p.stock <= 0).length
+
+    // Top selling products
+    const productSales = {}
+    filteredOrders.forEach(order => {
+      order.items?.forEach(item => {
+        if (!productSales[item.productId]) {
+          productSales[item.productId] = {
+            name: item.name,
+            totalSold: 0,
+            revenue: 0
+          }
+        }
+        productSales[item.productId].totalSold += item.quantity
+        productSales[item.productId].revenue += item.price * item.quantity
+      })
+    })
+
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.totalSold - a.totalSold)
+      .slice(0, 5)
+
+    // Low stock products
+    const lowStockProducts = products
+      .filter(p => p.stock <= 10)
+      .sort((a, b) => a.stock - b.stock)
+      .slice(0, 10)
+
+    // Recent orders
+    const recentOrders = orders
+      .sort((a, b) => new Date(b.orderDate || b.createdAt) - new Date(a.orderDate || a.createdAt))
+      .slice(0, 10)
+
+    // Calculate growth (mock data for now)
+    const revenueGrowth = Math.random() * 20 - 10 // -10% to +10%
+    const ordersGrowth = Math.random() * 30 - 15 // -15% to +15%
+
+    // Customer analytics (based on orders)
+    const uniqueCustomers = new Set(orders.map(order => order.customer?.email)).size
+    const newCustomersCount = Math.floor(uniqueCustomers * 0.3) // Mock calculation
+    const returningCustomers = uniqueCustomers - newCustomersCount
+
+    return {
+      sales: {
+        totalRevenue,
+        totalOrders,
+        averageOrderValue,
+        revenueGrowth,
+        ordersGrowth
+      },
+      orders: ordersByStatus,
+      products: {
+        total: products.length,
+        inStock,
+        lowStock,
+        outOfStock,
+        topProducts
+      },
+      customers: {
+        total: uniqueCustomers,
+        newCustomers: newCustomersCount,
+        returningCustomers
+      },
+      recentOrders,
+      lowStockProducts
+    }
+  }
+
+  const formatPrice = (price) => `Rs. ${price?.toFixed(0) || 0}`
+  
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const getStatusColor = (status) => {
+    const colors = {
+      confirmed: "bg-yellow-100 text-yellow-800",
+      processing: "bg-blue-100 text-blue-800",
+      shipped: "bg-purple-100 text-purple-800",
+      delivered: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800"
+    }
+    return colors[status] || "bg-gray-100 text-gray-800"
+  }
+
+  const getStockStatus = (stock) => {
+    if (stock <= 0) return { label: "Out of Stock", color: "text-red-600", bg: "bg-red-50" }
+    if (stock <= 5) return { label: "Critical", color: "text-red-600", bg: "bg-red-50" }
+    if (stock <= 10) return { label: "Low Stock", color: "text-yellow-600", bg: "bg-yellow-50" }
+    return { label: "In Stock", color: "text-green-600", bg: "bg-green-50" }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, Admin! Here's what's happening with your store today.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
+          <p className="text-muted-foreground">Overview of your store performance and key metrics</p>
         </div>
-        <Tabs defaultValue={timeRange} onValueChange={setTimeRange} className="w-[400px]">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="year">Year</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <Select value={timeRange} onValueChange={setTimeRange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select time range" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">Last 7 days</SelectItem>
+            <SelectItem value="30">Last 30 days</SelectItem>
+            <SelectItem value="90">Last 90 days</SelectItem>
+            <SelectItem value="365">Last year</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
+      {/* Key Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -187,298 +256,259 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.revenue.value.toLocaleString()}</div>
-            <div className="flex items-center space-x-2">
-              {stats.revenue.increasing ? (
-                <Badge className="bg-green-500">
-                  <ArrowUp className="mr-1 h-3 w-3" />
-                  {stats.revenue.change}%
-                </Badge>
-              ) : (
-                <Badge variant="destructive">
-                  <ArrowDown className="mr-1 h-3 w-3" />
-                  {stats.revenue.change}%
-                </Badge>
-              )}
-              <p className="text-xs text-muted-foreground">from last {timeRange}</p>
-            </div>
+            <div className="text-2xl font-bold">{formatPrice(analytics.sales.totalRevenue)}</div>
+            <p className="text-xs text-muted-foreground">
+              <span className={analytics.sales.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"}>
+                {analytics.sales.revenueGrowth >= 0 ? "+" : ""}{analytics.sales.revenueGrowth.toFixed(1)}%
+              </span>{" "}
+              from last period
+            </p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.orders.value}</div>
-            <div className="flex items-center space-x-2">
-              {stats.orders.increasing ? (
-                <Badge className="bg-green-500">
-                  <ArrowUp className="mr-1 h-3 w-3" />
-                  {stats.orders.change}%
-                </Badge>
-              ) : (
-                <Badge variant="destructive">
-                  <ArrowDown className="mr-1 h-3 w-3" />
-                  {stats.orders.change}%
-                </Badge>
-              )}
-              <p className="text-xs text-muted-foreground">from last {timeRange}</p>
-            </div>
+            <div className="text-2xl font-bold">{analytics.sales.totalOrders}</div>
+            <p className="text-xs text-muted-foreground">
+              <span className={analytics.sales.ordersGrowth >= 0 ? "text-green-600" : "text-red-600"}>
+                {analytics.sales.ordersGrowth >= 0 ? "+" : ""}{analytics.sales.ordersGrowth.toFixed(1)}%
+              </span>{" "}
+              from last period
+            </p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatPrice(analytics.sales.averageOrderValue)}</div>
+            <p className="text-xs text-muted-foreground">
+              Per order average
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.customers.value}</div>
-            <div className="flex items-center space-x-2">
-              {stats.customers.increasing ? (
-                <Badge className="bg-green-500">
-                  <ArrowUp className="mr-1 h-3 w-3" />
-                  {stats.customers.change}%
-                </Badge>
-              ) : (
-                <Badge variant="destructive">
-                  <ArrowDown className="mr-1 h-3 w-3" />
-                  {stats.customers.change}%
-                </Badge>
-              )}
-              <p className="text-xs text-muted-foreground">from last {timeRange}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inventory</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.inventory.value}</div>
-            <div className="flex items-center space-x-2">
-              {stats.inventory.increasing ? (
-                <Badge className="bg-green-500">
-                  <ArrowUp className="mr-1 h-3 w-3" />
-                  {stats.inventory.change}%
-                </Badge>
-              ) : (
-                <Badge variant="destructive">
-                  <ArrowDown className="mr-1 h-3 w-3" />
-                  {stats.inventory.change}%
-                </Badge>
-              )}
-              <p className="text-xs text-muted-foreground">from last {timeRange}</p>
-            </div>
+            <div className="text-2xl font-bold">{analytics.customers.total}</div>
+            <p className="text-xs text-muted-foreground">
+              {analytics.customers.newCustomers} new this period
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
-          <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>You have {recentOrders.length} orders today</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar>
-                      <AvatarImage src={order.avatar || "/placeholder.svg"} alt={order.customer} />
-                      <AvatarFallback>{order.customer.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{order.customer}</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-muted-foreground">{order.id}</p>
-                        <div className={`h-1.5 w-1.5 rounded-full ${order.statusColor}`}></div>
-                        <p className="text-xs text-muted-foreground">{order.status}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">${order.amount.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">{order.date}</p>
-                    </div>
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/admin/orders/${order.id}`}>
-                        <ArrowRight className="h-4 w-4" />
-                        <span className="sr-only">View order</span>
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/admin/orders">View All Orders</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Top Selling Products</CardTitle>
-            <CardDescription>Your best performing products this {timeRange}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topProducts.map((product) => (
-                <div key={product.id} className="flex items-center gap-4">
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    className="h-10 w-10 rounded-md object-cover"
-                  />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">{product.name}</p>
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <span>{product.sold} sold</span>
-                      <span className="mx-2">•</span>
-                      <span>${product.revenue.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {product.stock < 20 ? (
-                      <TrendingDown className="h-4 w-4 text-destructive" />
-                    ) : (
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                    )}
-                    <span className="text-sm">{product.stock}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/admin/products">View All Products</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-
+      {/* Order Status Overview */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Low Stock Alerts</CardTitle>
-            <CardDescription>Products that need to be restocked soon</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Order Status Distribution
+            </CardTitle>
+            <CardDescription>Breakdown of orders by status</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {lowStockItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-4">
-                  <div className="relative">
-                    <img
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.name}
-                      className="h-10 w-10 rounded-md object-cover"
-                    />
-                    <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
-                      {item.stock}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">{item.name}</p>
-                      <div className="flex items-center gap-1">
-                        <AlertTriangle className="h-4 w-4 text-destructive" />
-                        <p className="text-xs text-destructive">Low stock</p>
-                      </div>
-                    </div>
-                    <div className="mt-1">
-                      <Progress value={(item.stock / item.threshold) * 100} className="h-2" />
-                    </div>
-                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{item.stock} in stock</span>
-                      <span>Threshold: {item.threshold}</span>
-                    </div>
-                  </div>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <span className="text-sm">Confirmed</span>
                 </div>
-              ))}
+                <span className="font-semibold">{analytics.orders.confirmed}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span className="text-sm">Processing</span>
+                </div>
+                <span className="font-semibold">{analytics.orders.processing}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                  <span className="text-sm">Shipped</span>
+                </div>
+                <span className="font-semibold">{analytics.orders.shipped}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-sm">Delivered</span>
+                </div>
+                <span className="font-semibold">{analytics.orders.delivered}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-sm">Cancelled</span>
+                </div>
+                <span className="font-semibold">{analytics.orders.cancelled}</span>
+              </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/admin/inventory">View Inventory</Link>
-            </Button>
-          </CardFooter>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest actions in your store</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Inventory Overview
+            </CardTitle>
+            <CardDescription>Stock status across all products</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="rounded-full bg-blue-500/20 p-2 text-blue-500">
-                  <Package className="h-4 w-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-medium">New product added:</span> Wireless Earbuds
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <Clock className="mr-1 inline-block h-3 w-3" />
-                    30 minutes ago
-                  </p>
-                </div>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{analytics.products.inStock}</div>
+                <div className="text-sm text-green-700">In Stock</div>
               </div>
-              <div className="flex items-start gap-4">
-                <div className="rounded-full bg-green-500/20 p-2 text-green-500">
-                  <CheckCircle2 className="h-4 w-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-medium">Order completed:</span> ORD-7348
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <Clock className="mr-1 inline-block h-3 w-3" />
-                    45 minutes ago
-                  </p>
-                </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">{analytics.products.lowStock}</div>
+                <div className="text-sm text-yellow-700">Low Stock</div>
               </div>
-              <div className="flex items-start gap-4">
-                <div className="rounded-full bg-yellow-500/20 p-2 text-yellow-500">
-                  <AlertTriangle className="h-4 w-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-medium">Low stock alert:</span> Digital Camera
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <Clock className="mr-1 inline-block h-3 w-3" />1 hour ago
-                  </p>
-                </div>
+              <div className="text-center p-4 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">{analytics.products.outOfStock}</div>
+                <div className="text-sm text-red-700">Out of Stock</div>
               </div>
-              <div className="flex items-start gap-4">
-                <div className="rounded-full bg-purple-500/20 p-2 text-purple-500">
-                  <Users className="h-4 w-4" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-medium">New customer registered:</span> David Kim
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <Clock className="mr-1 inline-block h-3 w-3" />2 hours ago
-                  </p>
-                </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">{analytics.products.total}</div>
+                <div className="text-sm text-blue-700">Total Products</div>
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full">
-              View All Activity
-            </Button>
-          </CardFooter>
         </Card>
       </div>
+
+      {/* Top Products and Low Stock Alerts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              Top Selling Products
+            </CardTitle>
+            <CardDescription>Best performing products in selected period</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analytics.products.topProducts.length > 0 ? (
+                analytics.products.topProducts.map((product, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <div className="font-medium">{product.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {product.totalSold} sold • {formatPrice(product.revenue)}
+                      </div>
+                    </div>
+                    <Badge variant="secondary">#{index + 1}</Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No sales data for selected period
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Low Stock Alerts
+            </CardTitle>
+            <CardDescription>Products that need immediate attention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analytics.lowStockProducts.length > 0 ? (
+                analytics.lowStockProducts.map((product) => {
+                  const stockStatus = getStockStatus(product.stock)
+                  return (
+                    <div key={product._id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          SKU: {product._id.substring(product._id.length - 8)}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold">{product.stock}</div>
+                        <Badge variant="outline" className={stockStatus.color}>
+                          {stockStatus.label}
+                        </Badge>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  All products are well stocked
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Orders */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Recent Orders
+          </CardTitle>
+          <CardDescription>Latest orders and their status</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {analytics.recentOrders.length > 0 ? (
+              analytics.recentOrders.map((order) => (
+                <div key={order._id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <div className="font-medium">
+                        #{order._id.slice(-6).toUpperCase()}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {order.customer?.firstName} {order.customer?.lastName}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="font-medium">{formatPrice(order.pricing?.total || order.total)}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDate(order.orderDate || order.createdAt)}
+                      </div>
+                    </div>
+                    <Badge className={getStatusColor(order.orderStatus)}>
+                      {order.orderStatus}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No recent orders
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

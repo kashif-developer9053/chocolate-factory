@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Search,
   Download,
@@ -13,6 +13,8 @@ import {
   DollarSign,
   ShoppingBag,
   Star,
+  Trash2,
+  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,174 +31,206 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { toast } from "@/hooks/use-toast"
 
-// Mock customer data
-const customers = [
-  {
-    id: "CUST-001",
-    name: "Emma Johnson",
-    email: "emma.johnson@example.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Maple Street, Portland, OR 97201",
-    status: "active",
-    totalSpent: 1245.67,
-    orders: 12,
-    lastOrder: "2023-05-15",
-    joinDate: "2022-11-03",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: ["loyal", "newsletter"],
-  },
-  {
-    id: "CUST-002",
-    name: "Michael Chen",
-    email: "michael.chen@example.com",
-    phone: "+1 (555) 987-6543",
-    address: "456 Oak Avenue, Seattle, WA 98101",
-    status: "active",
-    totalSpent: 879.25,
-    orders: 8,
-    lastOrder: "2023-05-02",
-    joinDate: "2023-01-15",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: ["new"],
-  },
-  {
-    id: "CUST-003",
-    name: "Sophia Rodriguez",
-    email: "sophia.r@example.com",
-    phone: "+1 (555) 234-5678",
-    address: "789 Pine Lane, San Francisco, CA 94102",
-    status: "inactive",
-    totalSpent: 2567.89,
-    orders: 21,
-    lastOrder: "2023-03-20",
-    joinDate: "2022-06-12",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: ["loyal", "wholesale"],
-  },
-  {
-    id: "CUST-004",
-    name: "James Wilson",
-    email: "james.wilson@example.com",
-    phone: "+1 (555) 876-5432",
-    address: "101 Cedar Road, Austin, TX 78701",
-    status: "active",
-    totalSpent: 456.78,
-    orders: 5,
-    lastOrder: "2023-05-10",
-    joinDate: "2023-02-28",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: ["new", "newsletter"],
-  },
-  {
-    id: "CUST-005",
-    name: "Olivia Kim",
-    email: "olivia.kim@example.com",
-    phone: "+1 (555) 345-6789",
-    address: "202 Birch Blvd, Chicago, IL 60601",
-    status: "active",
-    totalSpent: 3421.56,
-    orders: 28,
-    lastOrder: "2023-05-18",
-    joinDate: "2022-04-05",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: ["loyal", "wholesale", "newsletter"],
-  },
-  {
-    id: "CUST-006",
-    name: "William Davis",
-    email: "william.d@example.com",
-    phone: "+1 (555) 765-4321",
-    address: "303 Spruce Street, Denver, CO 80201",
-    status: "inactive",
-    totalSpent: 125.45,
-    orders: 2,
-    lastOrder: "2023-01-05",
-    joinDate: "2022-12-20",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: [],
-  },
-  {
-    id: "CUST-007",
-    name: "Ava Martinez",
-    email: "ava.martinez@example.com",
-    phone: "+1 (555) 456-7890",
-    address: "404 Redwood Court, Miami, FL 33101",
-    status: "active",
-    totalSpent: 1876.23,
-    orders: 15,
-    lastOrder: "2023-05-12",
-    joinDate: "2022-08-17",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: ["loyal", "newsletter"],
-  },
-  {
-    id: "CUST-008",
-    name: "Ethan Thompson",
-    email: "ethan.t@example.com",
-    phone: "+1 (555) 654-3210",
-    address: "505 Walnut Drive, Boston, MA 02201",
-    status: "active",
-    totalSpent: 934.12,
-    orders: 9,
-    lastOrder: "2023-04-28",
-    joinDate: "2022-10-09",
-    avatar: "/placeholder.svg?height=40&width=40",
-    tags: ["newsletter"],
-  },
-]
-
 export default function CustomersPage() {
+  const [customers, setCustomers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [tagFilter, setTagFilter] = useState("all")
   const [sortBy, setSortBy] = useState("recent")
   const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
-  // Filter customers based on search term, status, and tag
-  const filteredCustomers = customers.filter((customer) => {
-    const matchesSearch =
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.id.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch customers from API
+  const fetchCustomers = async (page = 1, search = "") => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "10",
+        ...(search && { search })
+      })
+      
+      const response = await fetch(`/api/admin/users?${params}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setCustomers(data.data.users)
+        setCurrentPage(data.data.page)
+        setTotalPages(data.data.pages)
+        setTotal(data.data.total)
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to fetch customers",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch customers",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const matchesStatus = statusFilter === "all" || customer.status === statusFilter
+  // Delete customer
+  const deleteCustomer = async (customerId) => {
+    try {
+      setDeleteLoading(true)
+      const response = await fetch(`/api/admin/users/${customerId}`, {
+        method: "DELETE",
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Customer deleted successfully",
+        })
+        // Refresh the list
+        fetchCustomers(currentPage, searchTerm)
+        // Clear selected customer if it was deleted
+        if (selectedCustomer?._id === customerId) {
+          setSelectedCustomer(null)
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to delete customer",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting customer:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete customer",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
 
-    const matchesTag =
-      tagFilter === "all" || (tagFilter === "none" && customer.tags.length === 0) || customer.tags.includes(tagFilter)
+  // Bulk delete customers
+  const bulkDeleteCustomers = async (customerIds) => {
+    try {
+      setDeleteLoading(true)
+      const response = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userIds: customerIds }),
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: `${data.deletedCount} customer(s) deleted successfully`,
+        })
+        fetchCustomers(currentPage, searchTerm)
+        setSelectedCustomer(null)
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to delete customers",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting customers:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete customers",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
 
-    return matchesSearch && matchesStatus && matchesTag
-  })
+  // Search with debouncing
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      fetchCustomers(1, searchTerm)
+      setCurrentPage(1)
+    }, 500)
+
+    return () => clearTimeout(delayedSearch)
+  }, [searchTerm])
+
+  // Initial load
+  useEffect(() => {
+    fetchCustomers()
+  }, [])
 
   // Sort customers
-  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
+  const sortedCustomers = [...customers].sort((a, b) => {
     switch (sortBy) {
       case "recent":
-        return new Date(b.joinDate) - new Date(a.joinDate)
+        return new Date(b.createdAt) - new Date(a.createdAt)
       case "oldest":
-        return new Date(a.joinDate) - new Date(b.joinDate)
+        return new Date(a.createdAt) - new Date(b.createdAt)
       case "name-asc":
         return a.name.localeCompare(b.name)
       case "name-desc":
         return b.name.localeCompare(a.name)
-      case "spent-high":
-        return b.totalSpent - a.totalSpent
-      case "spent-low":
-        return a.totalSpent - b.totalSpent
-      case "orders-high":
-        return b.orders - a.orders
-      case "orders-low":
-        return a.orders - b.orders
+      case "email-asc":
+        return a.email.localeCompare(b.email)
+      case "email-desc":
+        return b.email.localeCompare(a.email)
       default:
         return 0
     }
   })
 
   const handleExportCustomers = () => {
+    // Create CSV content
+    const csvContent = [
+      ["Name", "Email", "Role", "Created At"].join(","),
+      ...customers.map(customer => [
+        customer.name,
+        customer.email,
+        customer.role,
+        new Date(customer.createdAt).toLocaleDateString()
+      ].join(","))
+    ].join("\n")
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "customers.csv"
+    a.click()
+    window.URL.revokeObjectURL(url)
+
     toast({
-      title: "Exporting customers",
-      description: "Customer data is being exported to CSV",
+      title: "Export completed",
+      description: "Customer data exported to CSV",
     })
   }
 
@@ -218,37 +252,19 @@ export default function CustomersPage() {
     })
   }
 
-  const handleDeleteCustomer = (customerId) => {
-    toast({
-      title: "Delete customer",
-      description: `This would delete customer ${customerId}`,
-      variant: "destructive",
-    })
-  }
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500"
-      case "inactive":
-        return "bg-gray-400"
-      default:
-        return "bg-gray-400"
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      const newPage = currentPage - 1
+      setCurrentPage(newPage)
+      fetchCustomers(newPage, searchTerm)
     }
   }
 
-  const getTagColor = (tag) => {
-    switch (tag) {
-      case "loyal":
-        return "bg-purple-500"
-      case "new":
-        return "bg-blue-500"
-      case "wholesale":
-        return "bg-amber-500"
-      case "newsletter":
-        return "bg-emerald-500"
-      default:
-        return "bg-gray-500"
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      const newPage = currentPage + 1
+      setCurrentPage(newPage)
+      fetchCustomers(newPage, searchTerm)
     }
   }
 
@@ -260,14 +276,15 @@ export default function CustomersPage() {
           <p className="text-muted-foreground">Manage and view your customer information</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button variant="outline" onClick={() => fetchCustomers(currentPage, searchTerm)}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
           <Button variant="outline" onClick={handleExportCustomers}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button onClick={handleAddCustomer}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Customer
-          </Button>
+        
         </div>
       </div>
 
@@ -280,36 +297,13 @@ export default function CustomersPage() {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search customers..."
+                    placeholder="Search customers by name or email..."
                     className="w-full pl-8"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="h-8 w-[110px]">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={tagFilter} onValueChange={setTagFilter}>
-                    <SelectTrigger className="h-8 w-[110px]">
-                      <SelectValue placeholder="Tag" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Tags</SelectItem>
-                      <SelectItem value="loyal">Loyal</SelectItem>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="wholesale">Wholesale</SelectItem>
-                      <SelectItem value="newsletter">Newsletter</SelectItem>
-                      <SelectItem value="none">No Tags</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger className="h-8 w-[140px]">
                       <SelectValue placeholder="Sort by" />
@@ -319,10 +313,8 @@ export default function CustomersPage() {
                       <SelectItem value="oldest">Oldest First</SelectItem>
                       <SelectItem value="name-asc">Name (A-Z)</SelectItem>
                       <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-                      <SelectItem value="spent-high">Highest Spent</SelectItem>
-                      <SelectItem value="spent-low">Lowest Spent</SelectItem>
-                      <SelectItem value="orders-high">Most Orders</SelectItem>
-                      <SelectItem value="orders-low">Fewest Orders</SelectItem>
+                      <SelectItem value="email-asc">Email (A-Z)</SelectItem>
+                      <SelectItem value="email-desc">Email (Z-A)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -336,36 +328,40 @@ export default function CustomersPage() {
                       <thead>
                         <tr className="border-b bg-muted/50 transition-colors">
                           <th className="h-10 px-4 text-left font-medium">Customer</th>
-                          <th className="h-10 px-4 text-left font-medium">Status</th>
-                          <th className="h-10 px-4 text-left font-medium">Total Spent</th>
-                          <th className="h-10 px-4 text-left font-medium">Orders</th>
-                          <th className="h-10 px-4 text-left font-medium">Tags</th>
+                          <th className="h-10 px-4 text-left font-medium">Role</th>
+                          <th className="h-10 px-4 text-left font-medium">Created At</th>
                           <th className="h-10 px-4 text-left font-medium">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {sortedCustomers.length === 0 ? (
+                        {loading ? (
                           <tr>
-                            <td colSpan="6" className="p-4 text-center text-muted-foreground">
+                            <td colSpan="4" className="p-4 text-center text-muted-foreground">
+                              <RefreshCw className="mx-auto h-4 w-4 animate-spin" />
+                              Loading customers...
+                            </td>
+                          </tr>
+                        ) : sortedCustomers.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" className="p-4 text-center text-muted-foreground">
                               No customers found matching your criteria
                             </td>
                           </tr>
                         ) : (
                           sortedCustomers.map((customer) => (
                             <tr
-                              key={customer.id}
-                              className="border-b transition-colors hover:bg-muted/50"
+                              key={customer._id}
+                              className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
                               onClick={() => handleCustomerSelect(customer)}
                             >
                               <td className="p-4">
                                 <div className="flex items-center gap-3">
                                   <Avatar>
-                                    <AvatarImage src={customer.avatar || "/placeholder.svg"} alt={customer.name} />
                                     <AvatarFallback>
                                       {customer.name
                                         .split(" ")
                                         .map((n) => n[0])
-                                        .join("")}
+                                        .join("").toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div>
@@ -375,55 +371,68 @@ export default function CustomersPage() {
                                 </div>
                               </td>
                               <td className="p-4">
-                                <div className="flex items-center gap-2">
-                                  <div className={`h-2 w-2 rounded-full ${getStatusColor(customer.status)}`} />
-                                  <span className="capitalize">{customer.status}</span>
-                                </div>
+                                <Badge variant="outline" className="capitalize">
+                                  {customer.role}
+                                </Badge>
                               </td>
-                              <td className="p-4">${customer.totalSpent.toFixed(2)}</td>
-                              <td className="p-4">{customer.orders}</td>
                               <td className="p-4">
-                                <div className="flex flex-wrap gap-1">
-                                  {customer.tags.length === 0 ? (
-                                    <span className="text-sm text-muted-foreground">None</span>
-                                  ) : (
-                                    customer.tags.map((tag) => (
-                                      <Badge key={tag} variant="outline" className="capitalize">
-                                        {tag}
-                                      </Badge>
-                                    ))
-                                  )}
-                                </div>
+                                {new Date(customer.createdAt).toLocaleDateString()}
                               </td>
                               <td className="p-4">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
+                                    <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                                       <MoreHorizontal className="h-4 w-4" />
                                       <span className="sr-only">Actions</span>
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => handleSendEmail(customer.id)}>
+                                    <DropdownMenuItem onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleSendEmail(customer._id)
+                                    }}>
                                       <Mail className="mr-2 h-4 w-4" />
                                       Send Email
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      <ShoppingBag className="mr-2 h-4 w-4" />
-                                      View Orders
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleCustomerSelect(customer)
+                                    }}>
                                       <Star className="mr-2 h-4 w-4" />
-                                      Add Tag
+                                      View Details
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                      className="text-red-600"
-                                      onClick={() => handleDeleteCustomer(customer.id)}
-                                    >
-                                      Delete Customer
-                                    </DropdownMenuItem>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem 
+                                          className="text-red-600" 
+                                          onClick={(e) => e.stopPropagation()}
+                                          onSelect={(e) => e.preventDefault()}
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          Delete Customer
+                                        </DropdownMenuItem>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete {customer.name}? This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => deleteCustomer(customer._id)}
+                                            className="bg-red-600 hover:bg-red-700"
+                                            disabled={deleteLoading}
+                                          >
+                                            {deleteLoading ? "Deleting..." : "Delete"}
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </td>
@@ -436,13 +445,26 @@ export default function CustomersPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">
-                    Showing <strong>{sortedCustomers.length}</strong> of <strong>{customers.length}</strong> customers
+                    Showing <strong>{customers.length}</strong> of <strong>{total}</strong> customers
+                    {totalPages > 1 && (
+                      <span> (Page {currentPage} of {totalPages})</span>
+                    )}
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" disabled>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handlePreviousPage}
+                      disabled={currentPage <= 1 || loading}
+                    >
                       Previous
                     </Button>
-                    <Button variant="outline" size="sm" disabled>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleNextPage}
+                      disabled={currentPage >= totalPages || loading}
+                    >
                       Next
                     </Button>
                   </div>
@@ -466,43 +488,60 @@ export default function CustomersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleSendEmail(selectedCustomer.id)}>
+                      <DropdownMenuItem onClick={() => handleSendEmail(selectedCustomer._id)}>
                         <Mail className="mr-2 h-4 w-4" />
                         Send Email
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <ShoppingBag className="mr-2 h-4 w-4" />
-                        View Orders
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => handleDeleteCustomer(selectedCustomer.id)}
-                      >
-                        Delete Customer
-                      </DropdownMenuItem>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Customer
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete {selectedCustomer.name}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteCustomer(selectedCustomer._id)}
+                              className="bg-red-600 hover:bg-red-700"
+                              disabled={deleteLoading}
+                            >
+                              {deleteLoading ? "Deleting..." : "Delete"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <CardDescription>ID: {selectedCustomer.id}</CardDescription>
+                <CardDescription>ID: {selectedCustomer._id}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-col items-center space-y-2">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src={selectedCustomer.avatar || "/placeholder.svg"} alt={selectedCustomer.name} />
                     <AvatarFallback className="text-lg">
                       {selectedCustomer.name
                         .split(" ")
                         .map((n) => n[0])
-                        .join("")}
+                        .join("").toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-center">
                     <h3 className="text-xl font-bold">{selectedCustomer.name}</h3>
-                    <div className="flex items-center justify-center space-x-1">
-                      <div className={`h-2 w-2 rounded-full ${getStatusColor(selectedCustomer.status)}`} />
-                      <span className="text-sm capitalize">{selectedCustomer.status}</span>
-                    </div>
+                    <Badge variant="outline" className="capitalize">
+                      {selectedCustomer.role}
+                    </Badge>
                   </div>
                 </div>
 
@@ -512,94 +551,32 @@ export default function CustomersPage() {
                     <span>{selectedCustomer.email}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedCustomer.phone}</span>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span>Joined: {new Date(selectedCustomer.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex items-start space-x-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedCustomer.address}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-medium">Customer Tags</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedCustomer.tags.length === 0 ? (
-                      <span className="text-sm text-muted-foreground">No tags assigned</span>
-                    ) : (
-                      selectedCustomer.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="capitalize">
-                          {tag}
-                        </Badge>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1 rounded-lg border p-3">
-                    <div className="text-xs text-muted-foreground">Total Spent</div>
-                    <div className="flex items-center text-lg font-bold">
-                      <DollarSign className="mr-1 h-4 w-4" />
-                      {selectedCustomer.totalSpent.toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="space-y-1 rounded-lg border p-3">
-                    <div className="text-xs text-muted-foreground">Orders</div>
-                    <div className="flex items-center text-lg font-bold">
-                      <ShoppingBag className="mr-1 h-4 w-4" />
-                      {selectedCustomer.orders}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  {selectedCustomer.updatedAt && (
                     <div className="flex items-center space-x-2 text-sm">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>Last Order:</span>
+                      <span>Updated: {new Date(selectedCustomer.updatedAt).toLocaleDateString()}</span>
                     </div>
-                    <span className="text-sm font-medium">
-                      {new Date(selectedCustomer.lastOrder).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>Customer Since:</span>
-                    </div>
-                    <span className="text-sm font-medium">
-                      {new Date(selectedCustomer.joinDate).toLocaleDateString()}
-                    </span>
-                  </div>
+                  )}
                 </div>
 
-                <Tabs defaultValue="orders" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="orders">Orders</TabsTrigger>
-                    <TabsTrigger value="notes">Notes</TabsTrigger>
+                <Tabs defaultValue="info" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="info">Info</TabsTrigger>
                     <TabsTrigger value="activity">Activity</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="orders" className="space-y-4">
-                    <div className="text-center text-sm text-muted-foreground">
-                      {selectedCustomer.orders > 0 ? (
-                        <p>Click "View Orders" to see detailed order history</p>
-                      ) : (
-                        <p>This customer has no orders yet</p>
-                      )}
+                  <TabsContent value="info" className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Customer Information</h4>
+                      <div className="text-sm space-y-1">
+                        <div><strong>Name:</strong> {selectedCustomer.name}</div>
+                        <div><strong>Email:</strong> {selectedCustomer.email}</div>
+                        <div><strong>Role:</strong> {selectedCustomer.role}</div>
+                        <div><strong>ID:</strong> {selectedCustomer._id}</div>
+                      </div>
                     </div>
-                    <Button className="w-full" variant="outline">
-                      <ShoppingBag className="mr-2 h-4 w-4" />
-                      View All Orders
-                    </Button>
-                  </TabsContent>
-                  <TabsContent value="notes" className="space-y-4">
-                    <div className="text-center text-sm text-muted-foreground">
-                      <p>No customer notes available</p>
-                    </div>
-                    <Button className="w-full" variant="outline">
-                      Add Note
-                    </Button>
                   </TabsContent>
                   <TabsContent value="activity" className="space-y-4">
                     <div className="text-center text-sm text-muted-foreground">

@@ -1,3 +1,4 @@
+// /app/login/page.js - Updated with localStorage
 "use client"
 
 import { useState } from "react"
@@ -31,28 +32,59 @@ export default function LoginPage() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      toast({
-        title: "Login successful",
-        description: "Welcome back to ShopEase!",
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       })
-      router.push("/")
-    }, 1500)
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Store user data in localStorage
+        localStorage.setItem('user', JSON.stringify(data.data))
+        
+        toast({
+          title: "Login successful",
+          description: "Welcome back to ShopEase!",
+        })
+        
+        // Dispatch auth change event to update navigation
+        window.dispatchEvent(new CustomEvent('authChanged'))
+        
+        router.push("/")
+      } else {
+        toast({
+          title: "Login failed",
+          description: data.message || "Invalid credentials",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
-          <MainNav />
-        </div>
-      </header>
       <main className="flex-1">
         <div className="container flex items-center justify-center py-12 md:py-16 lg:py-20">
           <Card className="mx-auto w-full max-w-md">
@@ -180,3 +212,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

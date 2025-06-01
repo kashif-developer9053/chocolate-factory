@@ -104,11 +104,7 @@ const faqs = [
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-        <div className="container flex h-16 items-center">
-          <MainNav />
-        </div>
-      </header>
+     
       <main className="flex-1">
         {/* Hero Section - Enhanced */}
         <section className="relative py-24 md:py-32 overflow-hidden">
@@ -135,12 +131,10 @@ const faqs = [
                   Have questions, special orders, or just want to say hello? Reach out and let's create something sweet together!
                 </p>
                 <div className="mt-8 flex flex-wrap gap-4 justify-center md:justify-start">
-                  <Button asChild size="lg" className="bg-[#C8815F] hover:bg-[#A66B4F] text-white border-none px-8 transform hover:scale-105 transition-transform">
-                    <Link href="/menu">Explore Our Menu</Link>
+                  <Button asChild size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-300 px-8 py-3 rounded-full text-lg font-medium tracking-wider uppercase">
+                    <Link href="/products">Explore Our Menu</Link>
                   </Button>
-                  <Button asChild size="lg" variant="outline" className="border-white bg-black text-white hover:bg-white/10 transform hover:scale-105 transition-transform">
-                    <Link href="/locations">Visit Us</Link>
-                  </Button>
+                  
                 </div>
               </div>
               <div className="hidden md:block relative h-[500px]">

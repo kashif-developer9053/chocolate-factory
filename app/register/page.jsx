@@ -1,3 +1,4 @@
+// /app/register/page.js - Modified Register Component
 "use client"
 
 import { useState } from "react"
@@ -33,28 +34,54 @@ export default function RegisterPage() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created. Welcome to ShopEase!",
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+        }),
       })
-      router.push("/")
-    }, 1500)
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Registration successful",
+          description: data.message || "Your account has been created. Welcome to ShopEase!",
+        })
+        // Redirect to home or dashboard after successful registration
+        router.push("/")
+      } else {
+        toast({
+          title: "Registration failed",
+          description: data.message || "Something went wrong",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
-          <MainNav />
-        </div>
-      </header>
       <main className="flex-1">
         <div className="container flex items-center justify-center py-12 md:py-16 lg:py-20">
           <Card className="mx-auto w-full max-w-md">
@@ -103,7 +130,7 @@ export default function RegisterPage() {
                       id="phone"
                       name="phone"
                       type="tel"
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="+92 300 1234567"
                       className="pl-10"
                       value={formData.phone}
                       onChange={handleChange}
@@ -137,7 +164,7 @@ export default function RegisterPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Password must be at least 8 characters long and include a mix of letters, numbers, and symbols.
+                    Password must be at least 6 characters long.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
