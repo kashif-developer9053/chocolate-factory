@@ -15,7 +15,7 @@ export default function HomePage() {
                 <FeaturedProducts />
                 <OurStory />
 
-                <SpecialOffers />
+                {/* <SpecialOffers /> */}
                                 <CustomerReviews />
 
         <CategorySection />

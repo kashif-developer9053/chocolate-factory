@@ -1,16 +1,18 @@
-// /app/orders/page.js - Updated to use new user orders route
 "use client"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Package, Clock, CheckCircle, Truck, AlertCircle, Eye, Calendar, MapPin, Phone, Mail, ShoppingBag } from "lucide-react"
+import { Package, Clock, CheckCircle, Truck, AlertCircle, Eye, Calendar, MapPin, Phone, Mail, ShoppingBag, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import MainNav from "@/components/main-nav"
 import Footer from "@/components/footer"
 import { toast } from "@/hooks/use-toast"
@@ -20,9 +22,15 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState(null)
+  const [reviewForm, setReviewForm] = useState({
+    orderId: null,
+    productId: null,
+    rating: 0,
+    comment: ''
+  })
+  const [showReviewForm, setShowReviewForm] = useState(false)
 
   useEffect(() => {
-    // Check if user is logged in
     try {
       const userData = localStorage.getItem('user')
       if (!userData) {
@@ -91,6 +99,50 @@ export default function MyOrdersPage() {
     }
   }
 
+  const submitReview = async (e) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...reviewForm,
+          userId: user._id
+        })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: "Review submitted",
+          description: "Thank you for your feedback!",
+        })
+        setShowReviewForm(false)
+        setReviewForm({
+          orderId: null,
+          productId: null,
+          rating: 0,
+          comment: ''
+        })
+      } else {
+        toast({
+          title: "Error submitting review",
+          description: data.message || "Failed to submit review",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Review submission error:', error)
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const formatPrice = (price) => {
     if (typeof price === 'object' && price.$numberDouble) {
       return `Rs. ${parseFloat(price.$numberDouble).toFixed(0)}`
@@ -101,7 +153,6 @@ export default function MyOrdersPage() {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A"
     
-    // Handle MongoDB date format
     if (typeof dateString === 'object' && dateString.$date) {
       dateString = dateString.$date.$numberLong || dateString.$date
     }
@@ -219,6 +270,55 @@ export default function MyOrdersPage() {
             </Card>
           )}
 
+          {/* Review Form */}
+          {showReviewForm && (
+            <Card className="bg-gray-50">
+              <CardHeader>
+                <CardTitle>Submit Review</CardTitle>
+                <CardDescription>Share your feedback about the product</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={submitReview} className="space-y-4">
+                  <div>
+                    <Label>Rating</Label>
+                    <div className="flex gap-1 mt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-6 w-6 cursor-pointer ${
+                            star <= reviewForm.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+                          }`}
+                          onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Comment</Label>
+                    <Textarea
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                      placeholder="Share your experience..."
+                      className="mt-1"
+                      rows={4}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={reviewForm.rating === 0}>
+                      Submit Review
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowReviewForm(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Debug Info */}
           {process.env.NODE_ENV === 'development' && (
             <Card className="bg-gray-50 border-gray-200">
@@ -309,6 +409,23 @@ export default function MyOrdersPage() {
                               <p className="text-sm text-muted-foreground">
                                 Qty: {item.quantity} × {formatPrice(item.price)}
                               </p>
+                              {order.orderStatus === 'delivered' && (
+                                <Button
+                                  variant="link"
+                                  className="p-0 h-auto text-blue-600"
+                                  onClick={() => {
+                                    setReviewForm({
+                                      orderId: order._id,
+                                      productId: item.productId,
+                                      rating: 0,
+                                      comment: ''
+                                    })
+                                    setShowReviewForm(true)
+                                  }}
+                                >
+                                  Write a Review
+                                </Button>
+                              )}
                             </div>
                             <span className="font-medium">
                               {formatPrice(item.price * item.quantity)}
@@ -322,7 +439,6 @@ export default function MyOrdersPage() {
 
                     {/* Order Details */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Shipping Address */}
                       <div className="space-y-3">
                         <h4 className="font-medium flex items-center gap-2">
                           <MapPin className="h-4 w-4" />
@@ -335,7 +451,6 @@ export default function MyOrdersPage() {
                         </div>
                       </div>
 
-                      {/* Contact Info */}
                       <div className="space-y-3">
                         <h4 className="font-medium">Contact Information</h4>
                         <div className="text-sm text-muted-foreground space-y-1">
@@ -351,7 +466,6 @@ export default function MyOrdersPage() {
                       </div>
                     </div>
 
-                    {/* Price Breakdown */}
                     <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
@@ -379,7 +493,6 @@ export default function MyOrdersPage() {
                       </div>
                     </div>
 
-                    {/* Order Notes */}
                     {order.notes && (
                       <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                         <h4 className="font-medium text-sm mb-2">Delivery Notes:</h4>
@@ -387,7 +500,6 @@ export default function MyOrdersPage() {
                       </div>
                     )}
 
-                    {/* Actions */}
                     <div className="flex flex-wrap gap-3 mt-6">
                       <Button variant="outline" asChild>
                         <Link href={`/track-order?tracking=${order.trackingNumber || order._id}`}>
@@ -415,7 +527,6 @@ export default function MyOrdersPage() {
             </div>
           )}
 
-          {/* Additional Info */}
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>

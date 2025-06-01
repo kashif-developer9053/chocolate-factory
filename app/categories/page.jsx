@@ -118,11 +118,7 @@ export default function CategoriesPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
-      <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-        <div className="container flex h-16 items-center">
-          <MainNav />
-        </div>
-      </header>
+      
       <main className="flex-1">
         <div className="container py-12">
           <div className="mb-8 text-center">

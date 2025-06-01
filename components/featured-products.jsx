@@ -1,10 +1,8 @@
-
-// components/FeaturedProducts.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import axios from "axios";
@@ -13,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState([]);
+  const [reviewSummaries, setReviewSummaries] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
@@ -24,7 +23,28 @@ export default function FeaturedProducts() {
         const response = await axios.get("/api/products?featured=true&limit=8");
         console.log('Featured Products Response:', JSON.stringify(response.data, null, 2));
         if (response.data.success) {
-          setProducts(response.data.data.products);
+          const products = response.data.data.products;
+          setProducts(products);
+
+          // Fetch review summaries only if products are available
+          if (products.length > 0) {
+            const productIds = products.map(product => product._id);
+            try {
+              const reviewResponse = await axios.post('/api/reviews/summary', { productIds });
+              if (reviewResponse.data.success) {
+                setReviewSummaries(reviewResponse.data.data);
+              } else {
+                console.error('Failed to load review summaries:', reviewResponse.data.message);
+              }
+            } catch (reviewError) {
+              console.error('Error fetching review summaries:', reviewError.message);
+              // Set empty summaries to avoid breaking the UI
+              setReviewSummaries(productIds.reduce((acc, id) => {
+                acc[id] = { reviewCount: 0, averageRating: 0 };
+                return acc;
+              }, {}));
+            }
+          }
         } else {
           setError("Failed to load featured products");
         }
@@ -40,12 +60,28 @@ export default function FeaturedProducts() {
   }, []);
 
   const formatPrice = (price) => `Rs. ${price.toFixed(0)}`;
- const handleAddToCart = (product) => {
+
+  const handleAddToCart = (product) => {
     addToCart(product);
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
     });
+  };
+
+  const renderReviewInfo = (productId) => {
+    const summary = reviewSummaries[productId] || { reviewCount: 0, averageRating: 0 };
+    if (summary.reviewCount === 0) {
+      return <span className="text-sm text-muted-foreground">No reviews yet</span>;
+    }
+    return (
+      <div className="flex items-center gap-1">
+        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+        <span className="text-sm font-medium">
+          {summary.averageRating} ({summary.reviewCount} {summary.reviewCount === 1 ? 'review' : 'reviews'})
+        </span>
+      </div>
+    );
   };
 
   if (loading) {
@@ -129,7 +165,7 @@ export default function FeaturedProducts() {
                   )}
                 </div>
               </Link>
-              <div className="p-5">
+              <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-2">
                   <Link href={`/products/${product._id}`} className="hover:underline">
                     <h3 className="font-bold text-lg">{product.name}</h3>
@@ -137,6 +173,9 @@ export default function FeaturedProducts() {
                   <span className="text-primary font-semibold">{formatPrice(product.price)}</span>
                 </div>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
+                <div className="flex justify-between items-center mb-2">
+                  {renderReviewInfo(product._id)}
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs px-2 py-1 bg-secondary text-primary rounded-full">
                     {product.category?.name || "Uncategorized"}
@@ -149,7 +188,7 @@ export default function FeaturedProducts() {
                     <CirclePlus className="mr-1 h-4 w-4" /> Add to Cart
                   </Button>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           ))}
         </div>

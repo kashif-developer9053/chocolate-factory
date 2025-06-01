@@ -173,64 +173,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
           <Link href="/admin" className="flex items-center gap-2">
-            <img src="/images/logo.png" alt="The Chocolate Factory" className="h-8 w-auto" />
             <span className="text-lg font-bold">Admin Panel</span>
           </Link>
         </div>
         <div className="ml-auto flex items-center gap-4">
-          <form className="relative hidden md:flex" onSubmit={(e) => e.preventDefault()}>
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input type="search" placeholder="Search..." className="w-[200px] pl-8 md:w-[240px] lg:w-[320px] border-gray-300" />
-          </form>
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">3</Badge>
-          </Button>
-          <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-auto p-2">
-                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-blue-600 font-semibold text-sm">
-                    {adminUser?.name?.charAt(0)?.toUpperCase() || 'A'}
-                  </span>
-                </div>
-                <span className="hidden md:block text-sm font-medium">
-                  {adminUser?.name || 'Admin'}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                {adminUser?.name || 'Admin User'}
-                <div className="text-xs font-normal text-gray-500">{adminUser?.email}</div>
-                <Badge variant="secondary" className="text-xs mt-1">Admin</Badge>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/profile">
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
-                {isLoggingOut ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging out...
-                  </>
-                ) : (
-                  <>
-                    <LogOut className="mr-2 h-4 w-4" /> Logout
-                  </>
-                )}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+         
         </div>
       </header>
       <div className="flex flex-1">

@@ -342,10 +342,7 @@ export default function MainNav() {
         </nav>
       </div>
       <div className="hidden items-center gap-4 md:flex">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input type="search" placeholder="Search products..." className="w-[200px] pl-8 md:w-[250px] lg:w-[300px]" />
-        </div>
+     
         {renderUserMenu()}
         <Button variant="ghost" size="icon" asChild className="relative">
           <Link href="/cart">

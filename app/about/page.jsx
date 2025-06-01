@@ -8,11 +8,7 @@ import { WheatIcon, CakeIcon, HeartIcon, UsersIcon, LeafIcon, SparklesIcon } fro
 export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-        <div className="container flex h-16 items-center">
-          <MainNav />
-        </div>
-      </header>
+      
       <main className="flex-1">
         {/* Hero Section - Visually Enhanced */}
         <section className="relative py-24 md:py-32 overflow-hidden">
@@ -87,11 +83,12 @@ export default function AboutPage() {
                   <div className="absolute -left-4 w-8 h-8 rounded-full bg-[#C8815F] flex items-center justify-center">
                     <span className="text-white font-bold">1</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-[#2a201c] mb-2">The Beginning</h3>
+                  <h3 className="text-xl font-semibold text-[#2a201c] mb-2">Starting from Home</h3>
                   <p className="text-gray-600">
-                    Chalet Cafe began as a small corner bakery in F-7, Islamabad. Our founder, Maria Ahmed, transformed her 
-                    grandmother's handwritten recipes into offerings that quickly attracted a dedicated following of locals and 
-                    visitors alike.
+                    The Chocolates Factory began as a home-based business in Rawalpindi.
+ We sold imported chocolates and snacks through Instagram and WhatsApp.
+ Every order was packed with care by our family and delivered locally.
+
                   </p>
                 </div>
                 
@@ -99,22 +96,38 @@ export default function AboutPage() {
                   <div className="absolute -left-4 w-8 h-8 rounded-full bg-[#C8815F] flex items-center justify-center">
                     <span className="text-white font-bold">2</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-[#2a201c] mb-2">Growing Together</h3>
+                  <h3 className="text-xl font-semibold text-[#2a201c] mb-2">Growing Online</h3>
                   <p className="text-gray-600">
-                    As word spread about our authentic flavors and welcoming atmosphere, we expanded our menu and space. 
-                    By 2020, we had opened a second location in F-11, bringing our beloved baked goods to more of the city.
-                  </p>
+                    As demand grew, we expanded to Facebook and started running ads.
+ More customers discovered us, and our daily orders increased.
+ We offered bank transfers and cash-on-delivery for convenience.
+ </p>
                 </div>
                 
                 <div>
                   <div className="absolute -left-4 w-8 h-8 rounded-full bg-[#C8815F] flex items-center justify-center">
                     <span className="text-white font-bold">3</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-[#2a201c] mb-2">Chalet Cafe Today</h3>
+                  <h3 className="text-xl font-semibold text-[#2a201c] mb-2">Storage & Team Expansion</h3>
                   <p className="text-gray-600">
-                    Today, with three locations across Islamabad, we remain committed to our founding principles: 
-                    authentic recipes, quality ingredients, and creating a space where people connect over delicious food. 
-                    Each day, we bake with the same passion that started our journey.
+                   To manage inventory better, we rented a small storage room.
+                    This made packing and delivery faster and more organized.
+                    We also hired a helper to assist with deliveries.
+
+                  </p>
+                </div>
+
+                 <div>
+                  <div className="absolute -left-4 w-8 h-8 rounded-full bg-[#C8815F] flex items-center justify-center">
+                    <span className="text-white font-bold">4</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-[#2a201c] mb-2">Opening Our Store</h3>
+                  <p className="text-gray-600">
+                   With your support, we opened our first physical shop in a local market.
+                    Now, we proudly serve customers both online and in-store.
+                    The Chocolates Factory continues to grow with love and dedication.
+
+
                   </p>
                 </div>
               </div>
@@ -193,84 +206,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Team */}
-        <section className="py-20 bg-[#f8f5f2]">
-          <div className="container">
-            <div className="text-center mb-16">
-              <span className="inline-block px-4 py-1 rounded-full bg-[#C8815F]/10 text-[#C8815F] text-sm font-medium mb-4">The Faces Behind The Flavors</span>
-              <h2 className="text-3xl md:text-4xl font-light text-[#2a201c]">Meet Our Team</h2>
-              <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
-                The passionate people behind Chalet Cafe who pour their hearts into crafting your favorite treats.
-              </p>
-            </div>
-            
-            <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-              <div className="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all">
-                <div className="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-[#C8815F]/10">
-                  <Image
-                    src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-                    alt="Head Baker"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-[#2a201c]">Maria Ahmed</h3>
-                <p className="text-[#C8815F] font-medium mb-3">Founder & Head Baker</p>
-                <p className="text-sm text-gray-600">
-                  Passionate about preserving traditional Pakistani baking techniques with a modern twist.
-                </p>
-              </div>
-              
-              <div className="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all">
-                <div className="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-[#C8815F]/10">
-                  <Image
-                    src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-                    alt="Head Chef"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-[#2a201c]">Ahmed Khan</h3>
-                <p className="text-[#C8815F] font-medium mb-3">Head Chef</p>
-                <p className="text-sm text-gray-600">
-                  Classically trained chef who brings culinary excellence to our savory menu offerings.
-                </p>
-              </div>
-              
-              <div className="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all">
-                <div className="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-[#C8815F]/10">
-                  <Image
-                    src="https://images.unsplash.com/photo-1581299894007-aaa50297cf16?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-                    alt="Pastry Chef"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-[#2a201c]">Fatima Ali</h3>
-                <p className="text-[#C8815F] font-medium mb-3">Pastry Chef</p>
-                <p className="text-sm text-gray-600">
-                  Artist at heart who creates our stunning specialty cakes and delicate pastries.
-                </p>
-              </div>
-              
-              <div className="bg-white rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-all">
-                <div className="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-[#C8815F]/10">
-                  <Image
-                    src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
-                    alt="Cafe Manager"
-                    fill
-                    style={{ objectFit: 'cover' }}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-[#2a201c]">Omar Shah</h3>
-                <p className="text-[#C8815F] font-medium mb-3">Cafe Manager</p>
-                <p className="text-sm text-gray-600">
-                  Hospitality expert who ensures every guest has a warm, memorable experience at Chalet Cafe.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+      
 
         {/* Testimonial */}
         <section className="py-20 relative overflow-hidden">

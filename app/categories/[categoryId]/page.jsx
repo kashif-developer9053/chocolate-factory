@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import MainNav from "@/components/main-nav";
 import Footer from "@/components/footer";
 import axios from "axios";
+import { useCart } from "@/context/CartContext";
+import { toast } from "@/hooks/use-toast";
 
 export default function CategoryProductsPage() {
   const { categoryId } = useParams();
@@ -17,7 +19,14 @@ export default function CategoryProductsPage() {
   const [categoryName, setCategoryName] = useState("Category");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { addToCart } = useCart();
+   const handleAddToCart = (product) => {
+    addToCart(product);
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
   const formatPrice = (price) => `Rs. ${price.toFixed(0)}`;
 
   useEffect(() => {
@@ -102,11 +111,7 @@ export default function CategoryProductsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
-      <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-        <div className="container flex h-16 items-center">
-          <MainNav />
-        </div>
-      </header>
+     
       <main className="flex-1">
         <div className="container py-12">
           <div className="mb-8">
@@ -149,16 +154,13 @@ export default function CategoryProductsPage() {
                       <span className="text-xs px-2 py-1 bg-[#f8f5f2] text-[#8B5F2B] rounded-full">
                         {product.category?.name || "Uncategorized"}
                       </span>
-                      <Button
-                        variant="ghost"
-                        className="inline-flex items-center justify-center gap-2 text-sm font-medium text-[#C8915F] hover:text-[#C8915F]/90 hover:bg-[#f8f5f2]"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          console.log("Adding to cart:", product);
-                        }}
-                      >
-                        <CirclePlus className="mr-1 h-4 w-4" /> Add to Cart
-                      </Button>
+                     <Button
+                    variant="ghost"
+                    className="inline-flex items-center justify-center gap-2 text-sm font-medium text-primary hover:text-primary/90 hover:bg-secondary"
+                    onClick={() => handleAddToCart(product)}
+                  >
+                    <CirclePlus className="mr-1 h-4 w-4" /> Add to Cart
+                  </Button>
                     </div>
                   </div>
                 </Card>
