@@ -165,48 +165,79 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (!isAuthenticated && pathname !== "/admin/admin-login") return null
   if (pathname === "/admin/admin-login") return <div className="min-h-screen">{children}</div>
 
-  return (
+ return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 flex h-16 items-center border-b bg-gray-50 px-4 md:px-6">
         <div className="flex items-center gap-2 md:gap-4">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
             {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <Link href="/admin" className="flex items-center gap-2">
-            <span className="text-lg font-bold">Admin Panel</span>
-          </Link>
         </div>
         <div className="ml-auto flex items-center gap-4">
-         
+          <form className="relative hidden md:flex" onSubmit={(e) => e.preventDefault()}>
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input type="search" placeholder="Search..." className="w-[200px] pl-8 md:w-[240px] lg:w-[320px] border-gray-300" />
+          </form>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">3</Badge>
+            <span className="sr-only">Notifications</span>
+          </Button>
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>
+                {adminUser?.name || 'Admin User'}
+                <div className="text-xs font-normal text-gray-500">{adminUser?.email}</div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                {isLoggingOut ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Logging out...
+                  </>
+                ) : (
+                  "Logout"
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
       <div className="flex flex-1">
-        <aside className={`fixed inset-y-0 left-0 z-40 w-64 transform border-r bg-gray-50 pt-16 transition-transform duration-200 md:static md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-          <nav className="space-y-1 p-4">
-            {routes.map((route) => (
-              <Link
-                key={route.href}
-                href={route.href}
-                onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center rounded-md px-3 py-2 text-sm font-medium ${pathname === route.href ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-200 hover:text-gray-900"}`}
-              >
-                <route.icon className="mr-3 h-5 w-5" />
-                {route.label}
-              </Link>
-            ))}
-          </nav>
+        <aside
+          className={`fixed inset-y-0 left-0 z-40 w-64 transform border-r bg-gray-50 pt-16 transition-transform duration-200 md:static md:translate-x-0 ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+
           <div className="absolute bottom-4 left-0 right-0 p-4">
             <Button variant="outline" className="w-full justify-start border-gray-300" asChild>
               <Link href="/">
-                <LogOut className="mr-2 h-5 w-5" /> Back to Store
+                <LogOut className="mr-2 h-5 w-5" />
+                Back to Store
               </Link>
             </Button>
           </div>
         </aside>
-        <main className="flex-1 p-6 md:pt-16">
+        {/* Overlay to close sidebar on mobile */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden" 
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+        <main className="flex-1 overflow-auto p-4 md:p-6 bg-white">
           {children}
         </main>
       </div>
-    </div>
+      </div>
   )
 }
