@@ -3,7 +3,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 import MainNav from "@/components/main-nav"
 import { CartProvider } from "@/context/CartContext";
-
+import Chatbot from "./chatbot/page";
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
@@ -27,6 +27,7 @@ export default function RootLayout({ children }) {
         </div>
       </header>
           {children}
+          <Chatbot />
 
                   </CartProvider>
 

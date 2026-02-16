@@ -30,11 +30,11 @@ export default function AboutPage() {
                 <span className="inline-block px-4 py-1 rounded-full bg-[#C8815F]/20 text-[#C8815F] text-sm font-medium mb-6">Est. 2018</span>
                 <h1 className="text-4xl md:text-6xl font-light tracking-wide mb-6 leading-tight">Our <span className="text-[#C8815F]">Story</span></h1>
                 <p className="text-lg md:text-xl text-gray-200 max-w-xl mx-auto md:mx-0">
-                  Founded with passion and tradition, Chalet Cafe has been Islamabad's beloved bakery since 2018, crafting moments of joy with every delicious bite.
+                  Founded with passion and tradition, Chocolate Factory has been Islamabad's beloved bakery since 2018, crafting moments of joy with every delicious bite.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-4 justify-center md:justify-start">
                   <Button asChild size="lg" className="bg-[#C8815F] hover:bg-[#A66B4F] text-white border-none px-8">
-                    <Link href="/menu">Our Menu</Link>
+                    <Link href="/products">Our Menu</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline" className="border-white bg-red text-white hover:bg-white/10">
                     <Link href="/contact">Contact Us</Link>
@@ -228,8 +228,7 @@ export default function AboutPage() {
                   </svg>
                 </div>
                 <blockquote className="text-xl md:text-2xl font-light text-[#2a201c] mb-6 italic">
-                  Chalet Cafe isn't just a bakery—it's where memories are made. The smell of freshly baked bread, 
-                  the warmth of their staff, and the pure joy of biting into their pastries makes this place truly special.
+                  At The Chocolates Factory, we bring the world’s finest imported chocolates and snacks to Pakistan. With a passion for quality and taste, we handpick every treat to delight your cravings. Discover joy in every bite, because you deserve the sweetest moments.
                 </blockquote>
                 <div className="flex items-center">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden mr-4">
@@ -260,11 +259,11 @@ export default function AboutPage() {
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-white">Ready to taste the difference?</h2>
               <p className="mt-4 text-xl text-white/90">
-                Join our community of food lovers who have discovered the authentic flavors of Chalet Cafe.
+                Join our community of food lovers who have discovered the authentic flavors of Chocolate Factory.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
                 <Button asChild size="lg" className="bg-white text-[#C8815F] hover:bg-gray-100 px-8">
-                  <Link href="/menu">Browse Our Menu</Link>
+                  <Link href="/products">Browse Our Menu</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="border-white bg-red text-white hover:bg-white/20">
                   <Link href="/contact">Visit Us Today</Link>

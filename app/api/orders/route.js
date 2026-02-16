@@ -43,8 +43,8 @@ export async function POST(req) {
       );
     }
 
-    // Create the order
-    const order = await Order.create({
+    // Prepare order object
+    const orderObject = {
       customer: {
         firstName: orderData.customer.firstName,
         lastName: orderData.customer.lastName,
@@ -68,6 +68,7 @@ export async function POST(req) {
         subtotal: orderData.pricing.subtotal,
         shipping: orderData.pricing.shipping,
         tax: orderData.pricing.tax,
+        discount: orderData.pricing.discount || 0,
         total: orderData.pricing.total
       },
       paymentMethod: orderData.paymentMethod || "cod",
@@ -75,9 +76,22 @@ export async function POST(req) {
       orderStatus: orderData.orderStatus || "confirmed",
       notes: orderData.notes || "",
       orderDate: orderData.orderDate || new Date(),
-      // Explicitly generate tracking number if not provided
       trackingNumber: orderData.trackingNumber || `TCF${Date.now().toString().slice(-6)}${Math.random().toString(36).substring(2, 4).toUpperCase()}`
-    });
+    };
+
+    // Add coupon data if present
+    if (orderData.coupon) {
+      orderObject.coupon = {
+        id: orderData.coupon.id,
+        code: orderData.coupon.code,
+        type: orderData.coupon.type,
+        value: orderData.coupon.value,
+        discountAmount: orderData.coupon.discountAmount
+      };
+    }
+
+    // Create the order
+    const order = await Order.create(orderObject);
 
     console.log('Order created successfully:', order._id);
     console.log('Tracking number assigned:', order.trackingNumber);
@@ -112,7 +126,7 @@ export async function GET(req) {
     const status = searchParams.get('status');
     const email = searchParams.get('email');
     const trackingNumber = searchParams.get('trackingNumber');
-    const search = searchParams.get('search'); // General search term
+    const search = searchParams.get('search');
     
     const skip = (page - 1) * limit;
     const query = {};
@@ -129,13 +143,10 @@ export async function GET(req) {
       query.trackingNumber = trackingNumber;
     }
 
-    // General search by order ID (last 6 characters)
     if (search) {
       if (search.length === 6) {
-        // Search by partial Order ID - fixed syntax error here
         query._id = { $regex: search.toLowerCase() + '$', $options: 'i' };
       } else if (search.length === 24) {
-        // Full MongoDB ObjectId
         query._id = search;
       }
     }

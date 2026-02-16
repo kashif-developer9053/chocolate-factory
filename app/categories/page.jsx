@@ -1,10 +1,8 @@
-// app/categories/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import MainNav from "@/components/main-nav";
 import Footer from "@/components/footer";
 import axios from "axios";
 
@@ -12,6 +10,12 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Function to truncate description to ~50 characters
+  const truncateDescription = (text) => {
+    if (!text) return "No description available";
+    return text.length > 50 ? `${text.slice(0, 50)}...` : text;
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -38,11 +42,7 @@ export default function CategoriesPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
-        <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-          <div className="container flex h-16 items-center">
-            <MainNav />
-          </div>
-        </header>
+       
         <main className="flex-1">
           <div className="container py-12">
             <div className="mb-8 text-center">
@@ -66,11 +66,7 @@ export default function CategoriesPage() {
   if (error) {
     return (
       <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
-        <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-          <div className="container flex h-16 items-center">
-            <MainNav />
-          </div>
-        </header>
+      
         <main className="flex-1">
           <div className="container py-12">
             <div className="mb-8 text-center">
@@ -91,11 +87,7 @@ export default function CategoriesPage() {
   if (categories.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
-        <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-          <div className="container flex h-16 items-center">
-            <MainNav />
-          </div>
-        </header>
+      
         <main className="flex-1">
           <div className="container py-12">
             <div className="mb-8 text-center">
@@ -118,7 +110,7 @@ export default function CategoriesPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f8f5f2]">
-      
+    
       <main className="flex-1">
         <div className="container py-12">
           <div className="mb-8 text-center">
@@ -144,7 +136,9 @@ export default function CategoriesPage() {
                     </div>
                     <div className="p-6 bg-white flex flex-col flex-grow">
                       <h3 className="text-xl font-semibold text-[#2a201c]">{category.name}</h3>
-                      <p className="mt-2 text-sm text-gray-600 flex-grow">{category.description || "No description available"}</p>
+                      <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                        {truncateDescription(category.description)}
+                      </p>
                       <div className="mt-4 flex items-center justify-between">
                         <span className="text-xs px-2 py-1 bg-[#f8f5f2] text-[#8B5A2B] rounded-full">
                           {category.productCount || 0} Items

@@ -1,5 +1,4 @@
-// /app/lib/models/Setting.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const SettingSchema = new mongoose.Schema({
   key: {
@@ -13,7 +12,7 @@ const SettingSchema = new mongoose.Schema({
   },
   group: {
     type: String,
-    default: 'general',
+    default: "general",
   },
   createdAt: {
     type: Date,
@@ -25,12 +24,11 @@ const SettingSchema = new mongoose.Schema({
   },
 });
 
-// Update timestamp on save
-SettingSchema.pre('save', function(next) {
+SettingSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
-const Setting = mongoose.models.Setting || mongoose.model('Setting', SettingSchema);
+const Setting = mongoose.models.Setting || mongoose.model("Setting", SettingSchema);
 
 export default Setting;

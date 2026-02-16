@@ -151,24 +151,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Account Statistics */}
-                <div className="space-y-4 pt-6 border-t">
-                  <h3 className="font-semibold">Account Statistics</h3>
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">0</div>
-                      <div className="text-sm text-muted-foreground">Total Orders</div>
-                    </div>
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">$0.00</div>
-                      <div className="text-sm text-muted-foreground">Total Spent</div>
-                    </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">0</div>
-                      <div className="text-sm text-muted-foreground">Wishlist Items</div>
-                    </div>
-                  </div>
-                </div>
+              
               </CardContent>
             </Card>
           </div>

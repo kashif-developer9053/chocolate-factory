@@ -2,7 +2,77 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Edit, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
+import { Edit, Trash2, Plus, Image as ImageIcon, AlertTriangle, X } from 'lucide-react';
+
+// Custom Delete Confirmation Modal
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, isDeleting }) => {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white border rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </button>
+
+        {/* Content */}
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">{title}</h3>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-600">
+            {message}
+          </p>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <button
+              onClick={onClose}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50 flex items-center gap-2"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -18,6 +88,14 @@ export default function CategoriesPage() {
   const [previewImage, setPreviewImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+
+  // Delete modal states
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    categoryId: null,
+    categoryName: '',
+    isDeleting: false
+  });
 
   useEffect(() => {
     fetchCategories();
@@ -131,14 +209,40 @@ export default function CategoriesPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+  // Open delete modal
+  const openDeleteModal = (categoryId, categoryName) => {
+    setDeleteModal({
+      isOpen: true,
+      categoryId,
+      categoryName,
+      isDeleting: false
+    });
+  };
+
+  // Close delete modal
+  const closeDeleteModal = () => {
+    if (deleteModal.isDeleting) return; // Prevent closing while deleting
+    
+    setDeleteModal({
+      isOpen: false,
+      categoryId: null,
+      categoryName: '',
+      isDeleting: false
+    });
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    setDeleteModal(prev => ({ ...prev, isDeleting: true }));
+    
     try {
-      await axios.delete(`/api/products/categories/${id}`);
+      await axios.delete(`/api/products/categories/${deleteModal.categoryId}`);
       fetchCategories();
+      closeDeleteModal();
     } catch (error) {
       console.error("Error deleting category:", error);
       alert("Failed to delete category");
+      setDeleteModal(prev => ({ ...prev, isDeleting: false }));
     }
   };
 
@@ -205,7 +309,7 @@ export default function CategoriesPage() {
                   <Edit size={18} />
                 </button>
                 <button 
-                  onClick={() => handleDelete(cat._id)} 
+                  onClick={() => openDeleteModal(cat._id, cat.name)} 
                   className="p-2 text-red-600 hover:bg-red-50 rounded-full transition"
                   title="Delete"
                 >
@@ -226,7 +330,7 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Add/Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
@@ -332,6 +436,16 @@ export default function CategoriesPage() {
           </div>
         </div>
       )}
+
+      {/* Custom Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${deleteModal.categoryName}"? This action cannot be undone.`}
+        isDeleting={deleteModal.isDeleting}
+      />
     </div>
   );
 }

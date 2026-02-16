@@ -1,0 +1,102 @@
+[
+  {
+    "keywords": ["about us", "who are you", "chocolates factory", "about"],
+    "response": "The Chocolates Factory is Pakistan’s top spot for premium imported chocolates and snacks, based in Bahria Town Rawalpindi since 2015. We’re all about bringing you the finest treats from global chocolatiers like Switzerland and Belgium, with a passion for quality and customer joy. Check out our story at: /about-us"
+  },
+    {
+    "keywords": ["address", "located", "chocolates factory", "about"],
+    "response": "Plaza no. 181 Shop no.9 Lower Ground, Civic Center Bahria Town, Phase 4 Islamabad "
+  },
+  {
+    "keywords": ["privacy policy", "data", "personal information", "privacy"],
+    "response": "At The Chocolates Factory, we take your privacy seriously! We collect stuff like your name, email, phone, and address to process orders, but it’s all secured with SSL encryption. We don’t store card details—those go through trusted payment processors. You can opt into marketing emails (unsubscribe anytime at thechoclolatefactory@icloud.com) and request your data or delete it. Cookies? They stick around for up to 24 months for analytics, but you can clear ‘em out. We don’t share your info with third-party marketers or collect data from kids under 13. Full details at: /privacy-policy"
+  },
+  {
+    "keywords": ["delivery areas", "deliver", "delivery", "where"],
+    "response": "We can deiver only  in RawalPindi, Islamabad we’ve got you covered with trusted couriers. Check your address at checkout or visit: /shipping-policy"
+  },
+  {
+    "keywords": ["delivery time", "how long", "shipping time", "when"],
+    "response": "Delivery times depend on where you are: major cities like Lahore or Karachi take 2–3 business days, smaller towns 3–5 days, and rural areas 4–6 days. Orders are processed in 1–2 business days (up to 2–4 during busy times like holidays). Track your order with the link we email you! More info at: /shipping-policy"
+  },
+  {
+    "keywords": ["shipping cost", "shipping charges", "delivery fee"],
+    "response": "Shipping costs are calculated at checkout based on your order’s weight and location. We sometimes run free shipping promos—keep an eye on our site or emails for those! Details at: /shipping-policy"
+  },
+  {
+    "keywords": ["tracking", "track order", "order status"],
+    "response": "Once your order ships, you’ll get an email with a tracking number and link to follow your package. No email after 3 business days? Hit us up at thechoclolatefactory@icloud.com. More at: /shipping-policy"
+  },
+  {
+    "keywords": ["delivery issues", "delay", "late delivery"],
+    "response": "We aim for speedy delivery, but delays can happen due to wrong addresses, courier hiccups, or stuff like strikes or bad weather. If your order’s super late, contact us at thechoclolatefactory@icloud.com, and we’ll track it down for you! See: /shipping-policy"
+  },
+  {
+    "keywords": ["damaged package", "missing package", "broken item"],
+    "response": "Got a damaged or tampered package? Snap some pics and email us at thechoclolatefactory@icloud.com within 24 hours. For missing packages, let us know within 48 hours, and we’ll investigate with the courier. Check out: /shipping-policy and /refund-policy"
+  },
+  {
+    "keywords": ["refund", "return", "non-returnable"],
+    "response": "Due to food safety, our chocolates, candies, snacks, and other edibles can’t be returned or refunded once shipped. For non-edible items, contact us within 7 business days of delivery (per TCS tracking) for a return, but you’ll cover return shipping, and a 20% restocking fee might apply. Shipping costs aren’t refundable. If we messed up your order, we’ll fix it if you tell us within 3 days. Full policy at: /refund-policy"
+  },
+  {
+    "keywords": ["heat damage", "melting", "weather damage"],
+    "response": "We don’t refund for chocolates melting in warm weather, so avoid ordering heat-sensitive stuff during hot months. Make sure someone’s there to grab your package when it arrives! Unsure about an item? Email us at thechoclolatefactory@icloud.com before ordering. See: /refund-policy"
+  },
+  {
+    "keywords": ["refused package", "return package"],
+    "response": "If you refuse a delivery, we’ll deduct a 20% restocking fee and both-way shipping costs from your refund, which goes back to your original payment method. More at: /refund-policy"
+  },
+  {
+    "keywords": ["damaged delivery", "broken delivery"],
+    "response": "If your order arrives damaged due to transit mishandling, take clear photos of the items and packaging and contact us within 7 days at thechoclolatefactory@icloud.com. We’ll review each case, but claims after 7 days (per TCS tracking) can’t be accepted. Details at: /refund-policy"
+  },
+  {
+    "keywords": ["source", "where chocolates from", "imported"],
+    "response": "We source our chocolates from top-notch chocolatiers in Switzerland, Belgium, France, Dubai, UK, and Saudi Arabia. Quality and authenticity are our jam! Check our FAQs at: /faqs"
+  },
+  {
+    "keywords": ["seasonal", "year-round", "holiday chocolates"],
+    "response": "Most of our imported chocolates are available year-round, but we drop special seasonal treats for holidays and occasions. Peek at our site for the latest goodies: /products"
+  },
+  {
+    "keywords": ["cocoa percentage", "flavor", "dark chocolate"],
+    "response": "We’ve got chocolates for every taste—dark, milk, white, with different cocoa percentages and flavors. Browse our selection at: /products or ask our team for recs!"
+  },
+  {
+    "keywords": ["limited edition", "exclusive chocolates"],
+    "response": "Oh yeah, we often have limited edition and exclusive chocolates you won’t find anywhere else. Keep an eye on our site for these rare treats: /products"
+  },
+  {
+    "keywords": ["quality", "freshness", "how fresh"],
+    "response": "We store and handle our chocolates with strict standards to keep ‘em fresh and flavorful. Our inventory’s always rotating to ensure you get the best. More in our FAQs: /faqs"
+  },
+  {
+    "keywords": ["gift", "gift packaging", "custom gift"],
+    "response": "We offer gift packaging and custom gift boxes for birthdays, weddings, or corporate events. Let us know your budget and vibe, and we’ll make it special! Contact us at thechoclolatefactory@icloud.com or check: /faqs"
+  },
+  {
+    "keywords": ["special order", "specific brand"],
+    "response": "Want a specific chocolate brand or type? We take special orders! Email us at thechoclolatefactory@icloud.com, and we’ll try to make it happen. See our FAQs: /faqs"
+  },
+  {
+    "keywords": ["origin", "ingredients", "chocolate info"],
+    "response": "We share all the deets—origin, ingredients, and flavor profiles—for our chocolates. Check product pages or ask us at thechoclolatefactory@icloud.com for more. FAQs at: /faqs"
+  },
+  {
+    "keywords": ["dietary", "allergies", "nuts"],
+    "response": "Some chocolates have nuts or dairy, but we’ve got options for dietary restrictions or allergies. Tell us your needs at thechoclolatefactory@icloud.com, and we’ll find the right treats! FAQs at: /faqs"
+  },
+  {
+    "keywords": ["contact", "support", "help", "customer service"],
+    "response": "Got a question? Email us at thechoclolatefactory@icloud.com or call +92-300-1234567 (9 AM–9 PM PKT, Monday–Saturday). We’re here to make your chocolate dreams come true!"
+  },
+  {
+    "keywords": ["hours", "timing", "open"],
+    "response": "We process orders Monday–Saturday, 9 AM–9 PM PKT. Deliveries happen within those hours, too. Holiday schedules might differ, so check: /shipping-policy"
+  },
+  {
+    "keywords": ["products", "menu", "what do you sell"],
+    "response": "We sell premium imported chocolates, candies, snacks, and more from top global brands. Dive into our menu at: /products"
+  }
+]

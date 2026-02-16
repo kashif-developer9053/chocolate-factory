@@ -1,45 +1,38 @@
-// /app/api/admin/settings/route.js
-import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/db';
-import Setting from '@/app/lib/models/Setting';
-import { admin } from '@/app/lib/auth';
-import { formatError } from '@/app/lib/utils';
+import { NextResponse } from "next/server";
+import connectDB from "../../lib/db";
+import Setting from "../../lib/models/Setting";
+import { admin } from "../../lib/auth";
+import { formatError } from "../../lib/utils";
 
-// Get settings (admin only)
+
+
 export async function GET(req) {
   try {
     await connectDB();
-    
-    const result = await admin(req);
-    
-    if (result instanceof NextResponse) {
-      return result;
-    }
-    
     const { searchParams } = new URL(req.url);
-    const group = searchParams.get('group') || '';
-    
-    // Build query
-    const query = {};
-    
-    if (group) {
-      query.group = group;
+    const key = searchParams.get("key");
+
+    // Skip authentication for logoUrl
+    if (key !== "logoUrl") {
+      const result = await admin(req);
+      if (result instanceof NextResponse) {
+        return result;
+      }
     }
-    
+
+    const query = key ? { key } : {};
     const settings = await Setting.find(query);
-    
-    // Convert to key-value object
     const settingsObj = {};
-    settings.forEach(setting => {
+    settings.forEach((setting) => {
       settingsObj[setting.key] = setting.value;
     });
-    
+
     return NextResponse.json({
       success: true,
       data: settingsObj,
     });
   } catch (error) {
-    console.error('Get settings error:', error);
+    console.error("Get settings error:", error);
     return NextResponse.json(
       { success: false, message: formatError(error) },
       { status: 500 }
@@ -47,46 +40,52 @@ export async function GET(req) {
   }
 }
 
-// Update settings (admin only)
+
 export async function PUT(req) {
   try {
     await connectDB();
-    
     const result = await admin(req);
-    
     if (result instanceof NextResponse) {
       return result;
     }
-    
-    const settings = await req.json();
-    
-    // Update each setting
-    const updatedSettings = {};
-    
-    for (const [key, value] of Object.entries(settings)) {
-      let setting = await Setting.findOne({ key });
-      
-      if (setting) {
-        setting.value = value;
-        await setting.save();
-      } else {
-        // Create new setting
-        setting = await Setting.create({
-          key,
-          value,
-          group: settings.group || 'general',
-        });
-      }
-      
-      updatedSettings[key] = setting.value;
+
+    const { key, logo } = await req.json();
+
+    if (!key || key !== "logoUrl") {
+      console.error("Invalid or missing key:", key);
+      return NextResponse.json(
+        { success: false, message: "Invalid or missing key" },
+        { status: 400 }
+      );
     }
-    
+
+    if (!logo || !logo.startsWith("data:image/")) {
+      console.error("No valid logo provided");
+      return NextResponse.json(
+        { success: false, message: "No logo file provided" },
+        { status: 400 }
+      );
+    }
+
+    let setting = await Setting.findOne({ key: "logoUrl" });
+    if (setting) {
+      setting.value = logo; // Store Base64 string
+      setting.updatedAt = Date.now();
+      await setting.save();
+    } else {
+      setting = await Setting.create({
+        key: "logoUrl",
+        value: logo,
+        group: "appearance",
+      });
+    }
+
     return NextResponse.json({
       success: true,
-      data: updatedSettings,
+      data: { logoUrl: setting.value },
     });
   } catch (error) {
-    console.error('Update settings error:', error);
+    console.error("Update settings error:", error);
     return NextResponse.json(
       { success: false, message: formatError(error) },
       { status: 500 }

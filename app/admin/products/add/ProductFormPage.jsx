@@ -267,7 +267,7 @@ export default function ProductForm({ id, isEditing }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
               <Textarea
                 id="description"
                 name="description"
@@ -275,6 +275,7 @@ export default function ProductForm({ id, isEditing }) {
                 rows={5}
                 value={formData.description}
                 onChange={handleChange}
+                required 
               />
             </div>
 
@@ -284,15 +285,14 @@ export default function ProductForm({ id, isEditing }) {
                   Price <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-2.5 text-muted-foreground">Pkr</span>
                   <Input
                     id="price"
                     name="price"
                     type="number"
-                    step="0.01"
+                    step="0.02"
                     min="0"
-                    placeholder="0.00"
-                    className="pl-7"
+                    className="pl-11 pt-2"
                     value={formData.price}
                     onChange={handleChange}
                     required
@@ -302,15 +302,14 @@ export default function ProductForm({ id, isEditing }) {
               <div className="space-y-2">
                 <Label htmlFor="discountedPrice">Discounted Price</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                  <span className="absolute left-3 top-2.5 text-muted-foreground">Pkr</span>
                   <Input
                     id="discountedPrice"
                     name="discountedPrice"
                     type="number"
                     step="0.01"
                     min="0"
-                    placeholder="0.00"
-                    className="pl-7"
+                    className="pl-11 pt-2"
                     value={formData.discountedPrice}
                     onChange={handleChange}
                   />
@@ -331,7 +330,7 @@ export default function ProductForm({ id, isEditing }) {
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     {categories.map((category) => (
                       <SelectItem key={category._id} value={category._id}>
                         {category.name}
@@ -341,13 +340,14 @@ export default function ProductForm({ id, isEditing }) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="brand">Brand</Label>
+                <Label htmlFor="brand">Brand <span className="text-destructive">*</span></Label>
                 <Input
                   id="brand"
                   name="brand"
                   placeholder="Enter brand name"
                   value={formData.brand}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -461,13 +461,11 @@ export default function ProductForm({ id, isEditing }) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (kg)</Label>
+                  <Label htmlFor="weight">Weight (gram)</Label>
                   <Input 
                     id="weight" 
                     type="number" 
-                    step="0.01" 
                     min="0" 
-                    placeholder="0.00" 
                   />
                 </div>
                 <div className="space-y-2">

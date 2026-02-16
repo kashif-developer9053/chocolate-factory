@@ -117,14 +117,7 @@ export default function CategorySection() {
             </Link>
           ))}
         </div>
-        <div className="mt-10 text-center">
-          <Link
-            href="/menu"
-            className="inline-flex items-center px-6 py-3 rounded-md bg-[#C8815F] text-white hover:bg-[#A66B4F] transition-colors"
-          >
-            View Full Menu
-          </Link>
-        </div>
+      
       </div>
     </section>
   );

@@ -1,4 +1,3 @@
-// app/cart/page.jsx
 "use client";
 
 import { useState } from "react";
@@ -6,7 +5,6 @@ import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import MainNav from "@/components/main-nav";
@@ -14,24 +12,6 @@ import Footer from "@/components/footer";
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeItem, clearCart } = useCart();
-  const [promoCode, setPromoCode] = useState("");
-  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
-
-  const applyPromoCode = () => {
-    if (!promoCode) return;
-
-    setIsApplyingPromo(true);
-    setTimeout(() => {
-      setIsApplyingPromo(false);
-      toast({
-        title: "Invalid promo code",
-        description: "The promo code you entered is invalid or expired",
-        variant: "destructive",
-      });
-    }, 1000);
-  };
-
-  // REMOVED the handleCheckout function that was clearing the cart
 
   const formatPrice = (price) => `Rs. ${price.toFixed(0)}`;
 
@@ -42,7 +22,6 @@ export default function CartPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-     
       <main className="flex-1">
         <div className="container py-8">
           <h1 className="mb-6 text-3xl font-bold">Your Cart</h1>
@@ -134,18 +113,7 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-1 items-center gap-2">
-                    <Input
-                      placeholder="Promo code"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      className="max-w-[200px]"
-                    />
-                    <Button variant="outline" onClick={applyPromoCode} disabled={isApplyingPromo || !promoCode}>
-                      {isApplyingPromo ? "Applying..." : "Apply"}
-                    </Button>
-                  </div>
+                <div className="mt-6 flex flex-wrap items-center justify-end gap-4">
                   <Button variant="outline" asChild>
                     <Link href="/products">Continue Shopping</Link>
                   </Button>
@@ -175,7 +143,6 @@ export default function CartPage() {
                         <span>{formatPrice(total)}</span>
                       </div>
                     </div>
-                    {/* Fixed: Using Link component properly for navigation */}
                     <Link href="/checkout" className="block mt-6">
                       <Button className="w-full" size="lg">
                         Proceed to Checkout

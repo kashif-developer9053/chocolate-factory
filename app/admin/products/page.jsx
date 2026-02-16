@@ -388,7 +388,7 @@ export default function ProductsPage() {
                     </TableCell>
                     <TableCell>{product.category?.name || '-'}</TableCell>
                     <TableCell className="text-right">
-                      ${product.price.toFixed(2)}
+                      Pkr {product.price.toFixed(2)}
                       {product.discountedPrice && (
                         <div className="text-sm text-muted-foreground line-through">
                           ${product.discountedPrice.toFixed(2)}

@@ -1,11 +1,10 @@
-// app/checkout/page.jsx - Updated with user detection
 "use client";
 
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Package, Truck, CreditCard, MapPin, User, Phone, Mail, CheckCircle } from "lucide-react";
+import { ArrowLeft, Package, Truck, CreditCard, MapPin, User, Phone, Mail, CheckCircle, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +24,14 @@ export default function CheckoutPage() {
   const [orderTrackingNumber, setOrderTrackingNumber] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [isUserLoaded, setIsUserLoaded] = useState(false);
+
+  // Coupon state
+  const [promoCode, setPromoCode] = useState("");
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [discount, setDiscount] = useState(0);
+
+  const [formErrors, setFormErrors] = useState({});
 
   // Form state
   const [formData, setFormData] = useState({
@@ -64,6 +71,75 @@ export default function CheckoutPage() {
     }
   }, []);
 
+  // Coupon functions
+  const applyPromoCode = async () => {
+    if (!promoCode.trim()) return;
+
+    setIsApplyingPromo(true);
+    
+    try {
+      const response = await fetch('/api/validate-coupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          couponCode: promoCode.toUpperCase(),
+          cartTotal: subtotal,
+          customerGroup: currentUser?.role || 'all',
+          hasOnSaleItems: false
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.valid) {
+        setAppliedCoupon(data.coupon);
+        setDiscount(data.discount);
+        toast({
+          title: "Coupon Applied!",
+          description: `${data.coupon.code} - Save ${data.coupon.type === 'percentage' ? `${data.coupon.value}%` : `Rs. ${data.coupon.value}`}`,
+        });
+      } else {
+        toast({
+          title: "Invalid Coupon",
+          description: data.error || "The coupon code is invalid or expired",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Coupon validation error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to validate coupon. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsApplyingPromo(false);
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscount(0);
+    setPromoCode("");
+    toast({
+      title: "Coupon Removed",
+      description: "Coupon has been removed from your order",
+    });
+  };
+
+  // Apply coupon usage when order is placed
+  const applyCouponUsage = async (couponId) => {
+    try {
+      await fetch(`/api/admin/coupons?id=${couponId}&action=use`, {
+        method: 'PATCH',
+      });
+    } catch (error) {
+      console.error('Error applying coupon usage:', error);
+    }
+  };
+
   // Redirect if cart is empty
   if (cartCount === 0 && !orderPlaced) {
     return (
@@ -83,8 +159,8 @@ export default function CheckoutPage() {
   // Calculate totals
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const shipping = subtotal > 1000 ? 0 : 100;
-  const tax = subtotal * 0.07;
-  const total = subtotal + shipping + tax;
+  const tax = (subtotal - discount) * 0.07;
+  const total = subtotal + shipping + tax - discount;
 
   const formatPrice = (price) => `Rs. ${price.toFixed(0)}`;
 
@@ -94,38 +170,45 @@ export default function CheckoutPage() {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   const validateForm = () => {
     const required = ['firstName', 'lastName', 'email', 'phone', 'address', 'city'];
-    const missing = required.filter(field => !formData[field].trim());
+    const errors = {};
     
-    if (missing.length > 0) {
-      toast({
-        title: "Missing Information",
-        description: `Please fill in: ${missing.join(', ')}`,
-        variant: "destructive"
-      });
-      return false;
-    }
+    // Check required fields
+    required.forEach(field => {
+      if (!formData[field].trim()) {
+        errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+      }
+    });
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address",
-        variant: "destructive"
-      });
-      return false;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
     }
 
     // Phone validation (Pakistan format)
     const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
-    if (!phoneRegex.test(formData.phone.replace(/\s+/g, ''))) {
+    if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s+/g, ''))) {
+      errors.phone = "Please enter a valid Pakistani phone number";
+    }
+
+    setFormErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
       toast({
-        title: "Invalid Phone",
-        description: "Please enter a valid Pakistani phone number",
+        title: "Please fix the errors below",
+        description: "Check the highlighted fields and try again",
         variant: "destructive"
       });
       return false;
@@ -137,10 +220,19 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!validateForm()) return;
 
+    // Check minimum order amount
+    if (total < 1000) {
+      toast({
+        title: "Minimum Order Required",
+        description: "Your order total must be at least Rs. 1000 to proceed.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
-      // Prepare customer data based on login status
       const customerData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -148,7 +240,6 @@ export default function CheckoutPage() {
         phone: formData.phone,
       };
 
-      // Add user info based on login status
       if (currentUser) {
         customerData.userId = currentUser._id;
         customerData.username = currentUser.name;
@@ -158,7 +249,6 @@ export default function CheckoutPage() {
         customerData.userId = null;
       }
 
-      // Prepare order data
       const orderData = {
         customer: customerData,
         address: {
@@ -177,8 +267,16 @@ export default function CheckoutPage() {
           subtotal: subtotal,
           shipping: shipping,
           tax: tax,
+          discount: discount,
           total: total
         },
+        coupon: appliedCoupon ? {
+          id: appliedCoupon.id,
+          code: appliedCoupon.code,
+          type: appliedCoupon.type,
+          value: appliedCoupon.value,
+          discountAmount: discount
+        } : null,
         paymentMethod: paymentMethod,
         paymentStatus: "pending",
         orderStatus: "confirmed",
@@ -189,12 +287,16 @@ export default function CheckoutPage() {
 
       console.log("Placing order:", orderData);
 
-      // Make API call to create order
       const response = await axios.post("/api/orders", orderData, {
-        withCredentials: true // Include cookies for authentication
+        withCredentials: true
       });
 
       if (response.data.success) {
+        // Apply coupon usage if coupon was used
+        if (appliedCoupon) {
+          await applyCouponUsage(appliedCoupon.id);
+        }
+
         setOrderId(response.data.data._id);
         setOrderTrackingNumber(response.data.data.trackingNumber);
         setOrderPlaced(true);
@@ -231,7 +333,6 @@ export default function CheckoutPage() {
             Thank you for your order! Your order has been confirmed and we'll start processing it soon.
           </p>
           
-          {/* User-specific message */}
           {currentUser ? (
             <div className="bg-blue-100 rounded-lg p-4 mb-6">
               <p className="text-blue-800 text-sm">
@@ -247,7 +348,6 @@ export default function CheckoutPage() {
             </div>
           )}
           
-          {/* Large Order ID and Tracking Number for easy copying */}
           <div className="bg-white rounded-lg p-6 mb-6 border-2 border-green-200">
             <div className="space-y-4">
               <div>
@@ -267,10 +367,6 @@ export default function CheckoutPage() {
                   </p>
                 </div>
               </div>
-              
-              <p className="text-xs text-gray-500 mt-2">
-                📋 Tap to select and copy these numbers for tracking your order
-              </p>
             </div>
           </div>
 
@@ -283,6 +379,12 @@ export default function CheckoutPage() {
                   {currentUser ? currentUser.name : `${formData.firstName} ${formData.lastName}`}
                 </span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-green-600">
+                  <span className="text-gray-600">Coupon Applied:</span>
+                  <span className="font-semibold">{appliedCoupon.code}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-600">Total Amount:</span>
                 <span className="font-semibold">{formatPrice(total)}</span>
@@ -392,7 +494,11 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       placeholder="Enter first name"
                       required
+                      className={formErrors.firstName ? "border-red-500" : ""}
                     />
+                    {formErrors.firstName && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.firstName}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name *</Label>
@@ -403,7 +509,11 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       placeholder="Enter last name"
                       required
+                      className={formErrors.lastName ? "border-red-500" : ""}
                     />
+                    {formErrors.lastName && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.lastName}</p>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -417,8 +527,11 @@ export default function CheckoutPage() {
                     placeholder="Enter email address"
                     required
                     readOnly={!!currentUser}
-                    className={currentUser ? "bg-gray-50" : ""}
+                    className={`${formErrors.email ? "border-red-500" : ""} ${currentUser ? "bg-gray-50" : ""}`}
                   />
+                  {formErrors.email && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone Number *</Label>
@@ -430,7 +543,11 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     placeholder="03XX-XXXXXXX"
                     required
+                    className={formErrors.phone ? "border-red-500" : ""}
                   />
+                  {formErrors.phone && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -453,7 +570,11 @@ export default function CheckoutPage() {
                     onChange={handleInputChange}
                     placeholder="Enter complete address"
                     required
+                    className={formErrors.address ? "border-red-500" : ""}
                   />
+                  {formErrors.address && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.address}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -465,7 +586,11 @@ export default function CheckoutPage() {
                       onChange={handleInputChange}
                       placeholder="Enter city"
                       required
+                      className={formErrors.city ? "border-red-500" : ""}
                     />
+                    {formErrors.city && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.city}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="postalCode">Postal Code</Label>
@@ -549,12 +674,57 @@ export default function CheckoutPage() {
 
                 <Separator />
 
+                {/* Coupon Section */}
+                <div className="space-y-3">
+                  {!appliedCoupon ? (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter coupon code"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        onKeyPress={(e) => e.key === 'Enter' && applyPromoCode()}
+                      />
+                      <Button 
+                        variant="outline" 
+                        onClick={applyPromoCode} 
+                        disabled={isApplyingPromo || !promoCode.trim()}
+                        size="sm"
+                      >
+                        {isApplyingPromo ? "..." : "Apply"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span className="text-green-800 font-medium">{appliedCoupon.code}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeCoupon}
+                        className="h-6 w-6 p-0 text-green-600 hover:text-green-800"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
                 {/* Price Breakdown */}
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({appliedCoupon.code})</span>
+                      <span>-{formatPrice(discount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Shipping</span>
                     <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
@@ -570,13 +740,25 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {/* Minimum Order Warning */}
+                {total < 1000 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-yellow-600" />
+                      <span className="text-yellow-800 font-medium">
+                        Minimum order: Rs. 1000 (Need Rs. {formatPrice(1000 - total)} more)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <Button 
                   className="w-full" 
                   size="lg" 
                   onClick={handlePlaceOrder}
-                  disabled={isProcessing}
+                  disabled={isProcessing || total < 1000}
                 >
-                  {isProcessing ? "Processing..." : "Place Order"}
+                  {isProcessing ? "Processing..." : total < 1000 ? "Minimum Rs. 1000 Required" : "Place Order"}
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground">

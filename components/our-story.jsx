@@ -153,9 +153,9 @@ With your support, we opened our first physical shop in a local market.
                 <div className="w-14 h-14 bg-gradient-to-br from-[#C8815F] to-[#A66B4F] rounded-full flex items-center justify-center mb-4">
                   <span className="text-xl">🌟</span>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-black">Quality</h3>
+                <h3 className="text-xl font-bold mb-3 text-black">Authenticity</h3>
                 <p className="text-black text-sm">
-                  We never compromise on ingredients or processes. Every item is crafted with the finest materials and utmost care.
+We offer only genuine, imported chocolates and snacks—no copies, no compromises.
                 </p>
               </motion.div>
               
@@ -167,9 +167,9 @@ With your support, we opened our first physical shop in a local market.
                 <div className="w-14 h-14 bg-gradient-to-br from-[#A66B4F] to-[#8B5A2B] rounded-full flex items-center justify-center mb-4">
                   <span className="text-xl">💖</span>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-black">Passion</h3>
+                <h3 className="text-xl font-bold mb-3 text-black">Reliability</h3>
                 <p className="text-black text-sm">
-                  Baking isn't just our profession—it's our calling. We pour our hearts into every creation that leaves our kitchen.
+Timely deliveries and trustworthy service are at the heart of what we do.
                 </p>
               </motion.div>
               
@@ -181,9 +181,10 @@ With your support, we opened our first physical shop in a local market.
                 <div className="w-14 h-14 bg-gradient-to-br from-[#8B5A2B] to-[#6F4E37] rounded-full flex items-center justify-center mb-4">
                   <span className="text-xl">🌱</span>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-black">Community</h3>
+                <h3 className="text-xl font-bold mb-3 text-black">Customer First
+</h3>
                 <p className="text-black text-sm">
-                  We're proud to be part of Islamabad's fabric, supporting local farmers and engaging with our neighborhood.
+Your satisfaction matters most. We’re here to serve and listen.
                 </p>
               </motion.div>
               
@@ -195,7 +196,8 @@ With your support, we opened our first physical shop in a local market.
                 <div className="w-14 h-14 bg-gradient-to-br from-[#6F4E37] to-[#5D4037] rounded-full flex items-center justify-center mb-4">
                   <span className="text-xl">🚀</span>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-black">Innovation</h3>
+                <h3 className="text-xl font-bold mb-3 text-black">Accessibility
+</h3>
                 <p className="text-black text-sm">
                   While respecting tradition, we constantly experiment with new flavors and techniques to surprise and delight.
                 </p>
@@ -210,7 +212,7 @@ With your support, we opened our first physical shop in a local market.
           >
             <h2 className="text-2xl text-gray-600 md:text-3xl font-light mb-4">Join Our Sweet Journey</h2>
             <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-              Come experience the magic of Chalet Cafe. Whether it's your first visit or your hundredth, we can't wait to serve you.
+              Come experience the magic of Chocolate Factory. Whether it's your first visit or your hundredth, we can't wait to serve you.
             </p>
            
           </motion.div>

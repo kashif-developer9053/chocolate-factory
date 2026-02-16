@@ -43,7 +43,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Free Shipping</h3>
-                    <p className="text-sm text-muted-foreground">On orders over $100</p>
+                    <p className="text-sm text-muted-foreground">On orders over 5000 Pkr</p>
                   </div>
                 </div>
               </div>
@@ -101,7 +101,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <NewsletterSection />
       </main>
       <Footer />
     </div>

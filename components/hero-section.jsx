@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function HeroSection() {
   const [checkinDate, setCheckinDate] = useState("Sun, 20 May 2025")
@@ -8,47 +9,39 @@ export default function HeroSection() {
   const [guests, setGuests] = useState("2 Adults")
   
   return (
-    <section className="relative h-screen w-full overflow-hidden">
-      {/* Full-sized background image - bakery themed */}
+    <section className="relative py-24 md:py-32 overflow-hidden">
+      {/* Background Image with Overlay */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center"
+        className="absolute inset-0 w-full h-full bg-cover bg-center z-0"
         style={{ 
           backgroundImage: 'url("images/bg.jpg")',
           backgroundPosition: 'center',
         }}
       >
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
       </div>
       
-      {/* Content container with vertical centering */}
-      <div className="relative z-10 h-full flex flex-col justify-center items-center text-white px-4 md:px-8">
-        {/* Main heading - large elegant font */}
-        <h1 className="text-5xl md:text-7xl font-light tracking-wider text-center mb-4 uppercase">
-         Your sweet treat awaits!
-        </h1>
-        <p className="text-xl md:text-2xl italic text-center mb-8 font-light">
-          Indulge in the Finest of the Chocolates and Snaks
-        </p>
-        <p className="text-xl md:text-2xl text-center mb-2 font-light">
-          At The Chocolates Factory right at your doorstep.
-        </p>
-       
-        <p className="text-xl md:text-2xl text-center mb-2 font-light">
-         we bring you a curated selection of the world's best chocolates and snacks,
-        </p>
-        
-        <p className="text-xl md:text-2xl text-center mb-12 font-light">
-         Whether you're craving rich, velvety chocolate or a savory treat, we've got something to satisfy every craving.
-        </p>
-     
-        {/* Shop Now Button - matching the image design */}
-        <Button 
-          className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-300 px-8 py-3 rounded-full text-lg font-medium tracking-wider uppercase"
-        >
-          SHOP NOW
-        </Button>
-        
+      {/* Content container */}
+      <div className="container relative z-10">
+        <div className="grid gap-10 md:grid-cols-2 items-center">
+          <div className="text-center md:text-left text-white">
+            <span className="inline-block px-4 py-1 rounded-full bg-[#C8815F]/20 text-[#C8815F] text-sm font-medium mb-6">Est. 2018</span>
+            <h1 className="text-4xl md:text-6xl font-light tracking-wide mb-6 leading-tight">
+              Your Sweet <span className="text-[#C8815F]">Treat</span> Awaits
+            </h1>
+            <p className="text-lg md:text-xl text-gray-200 max-w-xl mx-auto md:mx-0 mb-8">
+              Discover joy in every bite at The Chocolates Factory, where we bring the world’s finest chocolates and snacks to your doorstep since 2018.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+              <Button asChild  className="bg-[#C8815F] hover:bg-[#A66B4F] border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-300 px-8 py-3 rounded-full text-lg font-medium tracking-wider uppercase">
+                <Link href="/products">Shop Now</Link>
+              </Button>
+              <Button asChild  variant="outline" className="bg-black hover:bg-[#A66B4F] border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-300 px-8 py-3 rounded-full text-lg font-medium tracking-wider uppercase">
+                <Link href="/contact">Contact Us</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Bottom stats */}

@@ -1,4 +1,3 @@
-// /app/login/page.js - Updated with localStorage
 "use client"
 
 import { useState } from "react"
@@ -18,6 +17,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [debugInfo, setDebugInfo] = useState("")
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -35,8 +35,13 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
+    setDebugInfo("") // Clear previous debug info
 
     try {
+      console.log('🚀 Starting login request...')
+      console.log('📧 Email:', formData.email)
+      console.log('🔐 Password length:', formData.password.length)
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -49,11 +54,43 @@ export default function LoginPage() {
         }),
       })
 
-      const data = await response.json()
+      console.log('📡 Response status:', response.status)
+      console.log('📡 Response ok:', response.ok)
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()))
 
-      if (data.success) {
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type')
+      console.log('📄 Content-Type:', contentType)
+
+      let data
+      try {
+        const responseText = await response.text()
+        console.log('📄 Raw response:', responseText)
+        
+        if (contentType && contentType.includes('application/json')) {
+          data = JSON.parse(responseText)
+          console.log('✅ Parsed JSON data:', data)
+        } else {
+          console.error('❌ Response is not JSON!')
+          setDebugInfo(`Error: Server returned non-JSON response. Content-Type: ${contentType}`)
+          throw new Error('Server returned non-JSON response')
+        }
+      } catch (parseError) {
+        console.error('❌ JSON parse error:', parseError)
+        setDebugInfo(`JSON Parse Error: ${parseError.message}`)
+        throw new Error('Failed to parse server response')
+      }
+
+      // Handle different response scenarios
+      if (response.ok && data.success) {
+        console.log('✅ Login successful!')
+        console.log('👤 User data:', data.data)
+        
         // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify(data.data))
+        
+        // Print role to console
+        console.log('🎭 User role:', data.data.role)
         
         toast({
           title: "Login successful",
@@ -63,16 +100,43 @@ export default function LoginPage() {
         // Dispatch auth change event to update navigation
         window.dispatchEvent(new CustomEvent('authChanged'))
         
-        router.push("/")
+        // ✅ REDIRECT FUNCTIONALITY - STILL HERE AND WORKING!
+        // Redirect based on role
+        if (data.data.role === 'admin') {
+          console.log('🔀 Redirecting to ADMIN dashboard...')
+          setDebugInfo('✅ Login successful! Redirecting to admin dashboard...')
+          router.push('/admin')
+        } else if (data.data.role === 'user') {
+          console.log('🔀 Redirecting to USER profile...')
+          setDebugInfo('✅ Login successful! Redirecting to user profile...')
+          router.push('/profile')
+        } else {
+          console.log('🔀 Fallback redirect to profile...')
+          setDebugInfo('✅ Login successful! Using fallback redirect to profile...')
+          router.push('/profile')
+        }
       } else {
+        // Handle API errors
+        console.error('❌ Login failed!')
+        console.error('📄 Error data:', data)
+        
+        const errorMessage = data?.message || data?.error || 'Invalid credentials'
+        console.error('💬 Error message:', errorMessage)
+        
+        setDebugInfo(`Login failed: ${errorMessage} (Status: ${response.status})`)
+        
         toast({
           title: "Login failed",
-          description: data.message || "Invalid credentials",
+          description: errorMessage,
           variant: "destructive",
         })
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('💥 Catch block error:', error)
+      console.error('💥 Error stack:', error.stack)
+      
+      setDebugInfo(`Network/Parse Error: ${error.message}`)
+      
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -80,6 +144,7 @@ export default function LoginPage() {
       })
     } finally {
       setIsLoading(false)
+      console.log('🏁 Login request completed')
     }
   }
 
@@ -152,59 +217,21 @@ export default function LoginPage() {
                     Remember me for 30 days
                   </Label>
                 </div>
+
+                {/* Debug Information Display */}
+                {debugInfo && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-800 font-medium">Debug Info:</p>
+                    <p className="text-xs text-red-600 mt-1">{debugInfo}</p>
+                    <p className="text-xs text-red-500 mt-1">Check browser console for detailed logs</p>
+                  </div>
+                )}
+
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign in"}
                 </Button>
               </form>
-              <div className="mt-4 text-center text-sm">
-                Don't have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline">
-                  Sign up
-                </Link>
-              </div>
             </CardContent>
-            <CardFooter className="flex flex-col">
-              <div className="relative my-2 w-full">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-              <div className="mt-2 grid w-full grid-cols-2 gap-2">
-                <Button variant="outline" className="w-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 h-4 w-4">
-                    <path
-                      fill="currentColor"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </svg>
-                  Google
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 h-4 w-4">
-                    <path
-                      fill="currentColor"
-                      d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"
-                    />
-                  </svg>
-                  Facebook
-                </Button>
-              </div>
-            </CardFooter>
           </Card>
         </div>
       </main>
@@ -212,4 +239,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

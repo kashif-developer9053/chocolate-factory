@@ -3,12 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Mail, Phone, MapPin, Clock, Send, MessageSquare, Cake, Truck, Utensils, MessageCircle } from "lucide-react"
+import { Mail, Phone, MapPin, Send, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/hooks/use-toast"
 import MainNav from "@/components/main-nav"
 import Footer from "@/components/footer"
@@ -22,91 +21,116 @@ export default function ContactPage() {
     message: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-const faqs = [
-  {
-    question: "Where do you source your imported chocolates from?",
-    answer:
-      "We source our imported chocolates from renowned chocolatiers and manufacturers around the world, including Switzerland, Belgium, France, Dubai, UK, and Saudi Arabia. We prioritize quality and authenticity to bring you the finest chocolates.",
-  },
-  {
-    question: "Are your imported chocolates available year-round, or do you have seasonal offerings?",
-    answer:
-      "While many of our imported chocolates are available year-round, we also offer seasonal selections for holidays and special occasions. Check our website or store for the latest offerings.",
-  },
-  {
-    question: "Do you offer chocolates with specific cocoa percentages or flavor profiles?",
-    answer:
-      "Yes, we curate a variety of chocolates with different cocoa percentages and flavor profiles, including dark, milk, and white chocolates to suit every preference.",
-  },
-  {
-    question: "Can I find limited edition or exclusive chocolates at your store?",
-    answer:
-      "Absolutely! We frequently feature limited edition and exclusive chocolates not available elsewhere for unique and rare chocolate experiences.",
-  },
-  {
-    question: "How do you ensure the quality and freshness of your imported chocolates?",
-    answer:
-      "Our chocolates are stored and handled with care under strict standards, and our inventory is regularly rotated to ensure optimal freshness and flavor.",
-  },
-  {
-    question: "Do you offer gift packaging or customized gift options for special occasions?",
-    answer:
-      "Yes, we offer gift packaging and customized options for birthdays, weddings, and corporate events. Let us help you craft the perfect gift.",
-  },
-  {
-    question: "Can I request specific brands or types of chocolates for special orders?",
-    answer:
-      "Certainly! We welcome requests for specific brands or types. Contact us and we’ll do our best to accommodate your preferences.",
-  },
-  {
-    question: "Do you provide information about the origin and ingredients of your imported chocolates?",
-    answer:
-      "Yes, we share detailed origin and ingredient information. Our staff is always available to help you make informed choices.",
-  },
-  {
-    question: "Are your imported chocolates suitable for individuals with dietary restrictions or allergies?",
-    answer:
-      "Many of our chocolates contain common allergens, but we also offer suitable options. Let us know your dietary needs and we’ll assist accordingly.",
-  },
-];
-  const [activeIndex, setActiveIndex] = useState(null);
+
+  const faqs = [
+    {
+      question: "Where do you source your imported chocolates from?",
+      answer:
+        "We source our imported chocolates from renowned chocolatiers and manufacturers around the world, including Switzerland, Belgium, France, Dubai, UK, and Saudi Arabia. We prioritize quality and authenticity to bring you the finest chocolates.",
+    },
+    {
+      question: "Are your imported chocolates available year-round, or do you have seasonal offerings?",
+      answer:
+        "While many of our imported chocolates are available year-round, we also offer seasonal selections for holidays and special occasions. Check our website or store for the latest offerings.",
+    },
+    {
+      question: "Do you offer chocolates with specific cocoa percentages or flavor profiles?",
+      answer:
+        "Yes, we curate a variety of chocolates with different cocoa percentages and flavor profiles, including dark, milk, and white chocolates to suit every preference.",
+    },
+    {
+      question: "Can I find limited edition or exclusive chocolates at your store?",
+      answer:
+        "Absolutely! We frequently feature limited edition and exclusive chocolates not available elsewhere for unique and rare chocolate experiences.",
+    },
+    {
+      question: "How do you ensure the quality and freshness of your imported chocolates?",
+      answer:
+        "Our chocolates are stored and handled with care under strict standards, and our inventory is regularly rotated to ensure optimal freshness and flavor.",
+    },
+    {
+      question: "Do you offer gift packaging or customized gift options for special occasions?",
+      answer:
+        "Yes, we offer gift packaging and customized options for birthdays, weddings, and corporate events. Let us help you craft the perfect gift.",
+    },
+    {
+      question: "Can I request specific brands or types of chocolates for special orders?",
+      answer:
+        "Certainly! We welcome requests for specific brands or types. Contact us and we’ll do our best to accommodate your preferences.",
+    },
+    {
+      question: "Do you provide information about the origin and ingredients of your imported chocolates?",
+      answer:
+        "Yes, we share detailed origin and ingredient information. Our staff is always available to help you make informed choices.",
+    },
+    {
+      question: "Are your imported chocolates suitable for individuals with dietary restrictions or allergies?",
+      answer:
+        "Many of our chocolates contain common allergens, but we also offer suitable options. Let us know your dietary needs and we’ll assist accordingly.",
+    },
+  ]
+
+  const [activeIndex, setActiveIndex] = useState(null)
 
   const toggle = (index) => {
-    setActiveIndex(index === activeIndex ? null : index);
-  };
+    setActiveIndex(index === activeIndex ? null : index)
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleRadioChange = (value) => {
-    setFormData((prev) => ({ ...prev, subject: value }))
-  }
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Message sent!",
+          description: "We'll get back to you as soon as possible.",
+        })
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "general",
+          message: "",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to send message",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error)
       toast({
-        title: "Message sent!",
-        description: "We'll get back to you as soon as possible.",
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
       })
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "general",
-        message: "",
-      })
-    }, 1500)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <div className="flex min-h-screen flex-col">
-     
       <main className="flex-1">
-        {/* Hero Section - Enhanced */}
+        {/* Hero Section */}
         <section className="relative py-24 md:py-32 overflow-hidden">
           <div className="absolute inset-0 z-0">
             <Image
@@ -134,27 +158,23 @@ const faqs = [
                   <Button asChild size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-black transition-all duration-300 px-8 py-3 rounded-full text-lg font-medium tracking-wider uppercase">
                     <Link href="/products">Explore Our Menu</Link>
                   </Button>
-                  
                 </div>
               </div>
-              <div className="hidden md:block relative h-[500px]">
-             
-                
-              </div>
+              <div className="hidden md:block relative h-[500px]"></div>
             </div>
           </div>
           
           <div className="absolute bottom-0 left-0 w-full h-8 bg-[#f8f5f2] clip-diagonal z-10"></div>
         </section>
 
-        {/* Contact Content Section - Enhanced with Timeline */}
+        {/* Contact Content Section */}
         <section className="py-20 bg-[#f8f5f2] relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#C8815F]/5 -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-[#C8815F]/5 translate-y-1/2 -translate-x-1/2"></div>
           
           <div className="container relative z-10">
             <div className="grid gap-8 md:grid-cols-3">
-              {/* Contact Info Column - Timeline Style */}
+              {/* Contact Info Column */}
               <div className="md:col-span-1">
                 <div className="relative border-l-2 border-[#C8815F]/20 pl-8 ml-4 space-y-12">
                   <div className="flex items-center justify-center mb-10">
@@ -168,7 +188,7 @@ const faqs = [
                       icon: Mail,
                       title: "Email Us",
                       subtitle: "We'll respond within 24 hours",
-                      content: <a href="mailto: thechocolatesfactory@icloud.com" className="mt-1 block text-[#C8815F] font-medium hover:underline"> thechocolatesfactory@icloud.com</a>,
+                      content: <a href="mailto:thechocolatesfactory@icloud.com" className="mt-1 block text-[#C8815F] font-medium hover:underline">thechocolatesfactory@icloud.com</a>,
                     },
                     {
                       icon: Phone,
@@ -179,15 +199,12 @@ const faqs = [
                     {
                       icon: MapPin,
                       title: "Visit Us",
-                    
                       content: (
                         <address className="mt-1 not-italic text-gray-700">
-                          Plaza no. 181<br/> Shop no.9 <br/>Lower Ground, Civic Center <br/> Bahria Town, D
-Phase 4 <br/> Islamabad
+                          Plaza no. 181<br/> Shop no.9 <br/>Lower Ground, Civic Center <br/> Bahria Town, Phase 4 <br/> Islamabad
                         </address>
                       ),
                     },
-                  
                   ].map((item, index) => (
                     <div key={index} className="relative transform hover:-translate-y-1 transition-transform">
                       <div className="absolute -left-4 w-8 h-8 rounded-full bg-[#C8815F] flex items-center justify-center">
@@ -237,7 +254,7 @@ Phase 4 <br/> Islamabad
                 </div>
               </div>
 
-              {/* Form Column - Enhanced */}
+              {/* Form Column */}
               <div className="md:col-span-2">
                 <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 hover:shadow-md transition-all">
                   <div className="flex items-center gap-3 mb-6">
@@ -292,7 +309,21 @@ Phase 4 <br/> Islamabad
                       />
                     </div>
 
-                
+                    <div className="space-y-2 transform hover:-translate-y-1 transition-transform">
+                      <Label htmlFor="subject" className="text-[#2a201c] font-semibold">Subject</Label>
+                      <select
+                        id="subject"
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleChange}
+                        className="w-full border-gray-200 focus:border-[#C8815F] focus:ring-[#C8815F]/20 shadow-sm rounded-md p-2"
+                      >
+                        <option value="general">General Inquiry</option>
+                        <option value="order">Order Request</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="complaint">Complaint</option>
+                      </select>
+                    </div>
 
                     <div className="space-y-2 transform hover:-translate-y-1 transition-transform">
                       <Label htmlFor="message" className="text-[#2a201c] font-semibold">Your Message</Label>
@@ -332,7 +363,7 @@ Phase 4 <br/> Islamabad
                   </form>
                 </div>
                 
-                {/* Image Section - Enhanced */}
+                {/* Image Section */}
                 <div className="mt-8 grid gap-6 md:grid-cols-2">
                   <div className="relative h-[300px] rounded-xl overflow-hidden shadow-xl border-8 border-white transform rotate-3">
                     <Image 
@@ -364,14 +395,14 @@ Phase 4 <br/> Islamabad
           </div>
         </section>
 
-        {/* Map Section - Enhanced */}
+        {/* Map Section */}
         <section className="py-20 bg-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#C8815F]/5 -translate-y-1/2 translate-x-1/2"></div>
           <div className="container relative z-10">
             <div className="max-w-3xl mx-auto text-center mb-10">
               <span className="inline-block px-4 py-1 rounded-full bg-[#C8815F]/10 text-[#C8815F] text-sm font-medium mb-4 animate-pulse">Find Us</span>
               <h2 className="text-3xl md:text-4xl font-light text-[#2a201c]">
-                Visit <span className="text-[#C8815F]">Chalet Cafe</span>
+                Visit <span className="text-[#C8815F]">Chocolate Factory</span>
               </h2>
               <p className="mt-4 text-gray-600">
                 Join us in the heart of Islamabad for a warm, delightful experience!
@@ -380,15 +411,15 @@ Phase 4 <br/> Islamabad
             
             <div className="relative rounded-xl overflow-hidden shadow-md border border-gray-100">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6649.262647492115!2d73.04488097256163!3d33.72599623077015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38dfbffcd5f3ba2d%3A0xe8bba1398a19a04c!2sF-7%20Markaz%20F-7%2C%20Islamabad%2C%20Islamabad%20Capital%20Territory%2C%20Pakistan!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3328.138935098292!2d73.13510777575764!3d33.517996645608934!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38dfec43c61e8e2f%3A0x5d70ad22a545b0f9!2sCivic%20Center%20Bahria%20Town%2C%20Rawalpindi%2C%20Punjab!5e0!3m2!1sen!2sus!4v1719052160423!5m2!1sen!2sus"
                 width="100%"
                 height="450"
                 style={{ border: 0 }}
                 allowFullScreen=""
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Chalet Cafe Location"
-              ></iframe>
+                title="Chocolate Factory Location"
+              />
               <div className="absolute bottom-6 left-6 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-md">
                 <Button asChild size="lg" className="bg-[#C8815F] hover:bg-[#A66B4F] text-white border-none">
                   <Link href="/locations">Get Directions</Link>
@@ -398,62 +429,25 @@ Phase 4 <br/> Islamabad
           </div>
         </section>
 
-        {/* FAQs - Enhanced with Icons and Animations */}
-<div className="py-20 bg-[#f8f5f2] relative overflow-hidden">
-  <div className="w-[60%] mx-auto space-y-4">
-    {faqs.map((faq, index) => (
-      <div key={index} className="bg-white border border-gray-200 rounded-xl shadow-sm">
-        <button
-          onClick={() => toggle(index)}
-          className="w-full px-6 py-4 text-left font-medium text-[#2a201c] flex justify-between items-center hover:bg-[#f2ece9] transition-all"
-        >
-          <span>{faq.question}</span>
-          <span className="text-[#C8815F] text-xl">
-            {activeIndex === index ? '-' : '+'}
-          </span>
-        </button>
-        {activeIndex === index && (
-          <div className="px-6 pb-4 text-gray-600">{faq.answer}</div>
-        )}
-      </div>
-    ))}
-  </div>
-</div>
-
-
-
-   
-
-
-        {/* CTA Section - Enhanced with Gradient and Parallax */}
-        <section className="bg-gradient-to-b from-[#C8815F] to-[#A66B4F] py-16 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 transform translate-x-1/3 -translate-y-1/3 animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-black/5 transform -translate-x-1/3 translate-y-1/3 animate-pulse"></div>
-          
-          <div className="container relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-light mb-4">
-                Join Our <span className="text-white">Newsletter</span>
-              </h2>
-              <p className="text-lg opacity-90 mb-8">
-                Stay updated with seasonal offerings, exclusive promotions, and upcoming events at Chalet Cafe.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <Input 
-                  type="email" 
-                  placeholder="Your email address" 
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:border-white focus:ring-white/20 shadow-sm"
-                />
-                <Button size="lg" className="bg-white text-[#C8815F] hover:bg-white/90 whitespace-nowrap transform hover:scale-105 transition-transform">
-                  Subscribe
-                </Button>
+        {/* FAQs */}
+        <section className="py-20 bg-[#f8f5f2] relative overflow-hidden">
+          <div className="w-[60%] mx-auto space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-xl shadow-sm">
+                <button
+                  onClick={() => toggle(index)}
+                  className="w-full px-6 py-4 text-left font-medium text-[#2a201c] flex justify-between items-center hover:bg-[#f2ece9] transition-all"
+                >
+                  <span>{faq.question}</span>
+                  <span className="text-[#C8815F] text-xl">
+                    {activeIndex === index ? '-' : '+'}
+                  </span>
+                </button>
+                {activeIndex === index && (
+                  <div className="px-6 pb-4 text-gray-600">{faq.answer}</div>
+                )}
               </div>
-              
-              <p className="text-sm mt-4 opacity-80">
-                We respect your privacy. Unsubscribe at any time.
-              </p>
-            </div>
+            ))}
           </div>
         </section>
       </main>
